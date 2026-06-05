@@ -738,7 +738,7 @@ function openCompsPanel(cardId) {
   const parts = [card.player, card.year, card.set];
   if (card.cardNumber) parts.push('#' + card.cardNumber);
   const cond = conditionValue(card);
-  if (cond && cond !== 'Raw') parts.push(cond);
+  if (cond && cond !== 'Raw' && cond !== 'Sealed') parts.push(cond);
 
   const query = parts.filter(Boolean).join(' ');
   const ebayUrl = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(query)}&LH_Sold=1&LH_Complete=1`;
