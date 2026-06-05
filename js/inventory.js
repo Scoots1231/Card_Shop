@@ -199,6 +199,10 @@ function renderRow(card, rowNum) {
         <div class="action-cell" onclick="event.stopPropagation()">
           ${hasImages ? `<button class="btn-img" data-id="${card.id}" title="View images" aria-label="View card images"><i class="ti ti-camera"></i></button>` : ''}
           <button class="btn-edit" data-id="${card.id}" aria-label="Edit card"><i class="ti ti-pencil"></i></button>
+          ${card.status !== 'Sold' ? `<button class="btn-sold" data-id="${card.id}" aria-label="Mark as sold"
+            style="color:var(--accent-green);border-color:var(--accent-green);padding:2px 7px;font-size:11px;font-weight:600;letter-spacing:0.04em;">
+            <i class="ti ti-currency-dollar"></i> SOLD
+          </button>` : ''}
           <button class="btn-delete" data-id="${card.id}" aria-label="Delete card"
             style="color:var(--accent-red);border-color:var(--accent-red);padding:2px 7px;font-size:11px;font-weight:600;letter-spacing:0.04em;">
             <i class="ti ti-trash"></i> DELETE
@@ -247,6 +251,15 @@ function attachRowHandlers(tbody, cards) {
       e.stopPropagation();
       const card = window.AppData.cards.find(c => c.id === btn.dataset.id);
       if (card) openLightbox(card);
+    });
+  });
+
+  // Sold buttons
+  tbody.querySelectorAll('.btn-sold').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const card = window.AppData.cards.find(c => c.id === btn.dataset.id);
+      if (card) openSoldModal(card);
     });
   });
 
@@ -612,6 +625,108 @@ function addCashEntry(label, amount, date) {
     salePrice: 0, saleDate: '', platform: '',
     frontImageUrl: '', backImageUrl: '', notes: '',
   });
+}
+
+// ===== SOLD MODAL =====
+function openSoldModal(card) {
+  const existing = document.getElementById('sold-modal-overlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'sold-modal-overlay';
+  overlay.className = 'modal-overlay centered';
+
+  overlay.innerHTML = `
+    <div class="modal modal-center" role="dialog" aria-modal="true" aria-labelledby="sold-modal-title">
+      <div class="modal-header">
+        <span class="modal-title" id="sold-modal-title">Mark as Sold</span>
+        <button class="modal-close" id="sold-modal-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="margin-bottom:16px;padding:10px 14px;background:var(--bg-tertiary);border:1px solid var(--border);">
+          <div style="font-size:13px;font-weight:600;color:var(--text-primary);">${esc(card.player)}</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:3px;">${card.year} ${card.set}${card.cardNumber ? ' #' + card.cardNumber : ''} · ${conditionValue(card)}</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">Paid: <span style="font-family:var(--font-mono);color:var(--text-primary);">${formatCurrency(card.purchasePrice)}</span></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="sold-price">Sale Price <span style="color:var(--accent-red);">*</span></label>
+            <input type="number" id="sold-price" class="form-control mono" min="0" step="0.01" placeholder="0.00" autofocus>
+          </div>
+          <div class="form-group">
+            <label for="sold-date">Sale Date <span style="color:var(--accent-red);">*</span></label>
+            <input type="date" id="sold-date" class="form-control" value="${new Date().toISOString().slice(0,10)}">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="sold-platform">Platform</label>
+          <input type="text" id="sold-platform" class="form-control" placeholder="eBay, PWCC, etc.">
+        </div>
+        <div id="sold-pl-preview" style="font-size:12px;font-family:var(--font-mono);margin-top:4px;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="sold-modal-cancel">Cancel</button>
+        <button class="btn btn-success" id="sold-modal-save"><i class="ti ti-check"></i> Confirm Sale</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const priceInput = document.getElementById('sold-price');
+  const plPreview = document.getElementById('sold-pl-preview');
+
+  priceInput?.addEventListener('input', () => {
+    const sp = parseFloat(priceInput.value) || 0;
+    const pl = sp - (card.purchasePrice || 0);
+    if (sp > 0) {
+      plPreview.textContent = `P&L: ${formatPL(pl)}`;
+      plPreview.style.color = pl >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+    } else {
+      plPreview.textContent = '';
+    }
+  });
+
+  const close = () => overlay.remove();
+  document.getElementById('sold-modal-close')?.addEventListener('click', close);
+  document.getElementById('sold-modal-cancel')?.addEventListener('click', close);
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+
+  document.getElementById('sold-modal-save')?.addEventListener('click', () => {
+    const salePrice = parseFloat(priceInput?.value);
+    const saleDate = document.getElementById('sold-date').value;
+    const platform = document.getElementById('sold-platform').value.trim();
+
+    if (!salePrice || salePrice <= 0) {
+      showToast('Enter a valid sale price.', 'error');
+      return;
+    }
+    if (!saleDate) {
+      showToast('Enter a sale date.', 'error');
+      return;
+    }
+
+    const idx = window.AppData.cards.findIndex(c => c.id === card.id);
+    if (idx < 0) return;
+
+    window.AppData.cards[idx] = {
+      ...window.AppData.cards[idx],
+      status: 'Sold',
+      salePrice,
+      saleDate,
+      platform,
+    };
+
+    // Add sale proceeds to cash
+    addCashEntry(`SALE — ${card.player}`, salePrice, saleDate);
+
+    saveSessionData();
+    showToast(`${card.player} marked as sold for ${formatCurrency(salePrice)}.`, 'success');
+    close();
+    render();
+  });
+
+  priceInput?.focus();
 }
 
 // ===== COMPS PANEL =====
