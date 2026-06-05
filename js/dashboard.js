@@ -161,7 +161,7 @@ function renderScores(data, container) {
       <div class="score-item">
         <div class="score-team">${away?.team?.abbreviation || ''}</div>
         <div class="score-center">
-          <span class="score-value">${away?.score ?? '-'} - ${home?.score ?? '-'}</span>
+          <span class="score-value" style="color:var(--accent-amber);">${away?.score ?? '-'} - ${home?.score ?? '-'}</span>
           <span class="score-status">${isLive ? '<span class="live-dot"></span>' : ''}${statusText}</span>
         </div>
         <div class="score-team home">${home?.team?.abbreviation || ''}</div>
