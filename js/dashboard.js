@@ -188,22 +188,21 @@ async function fetchNews() {
   const container = document.getElementById('news-list');
   if (!container) return;
   try {
-    const rssUrl = 'https://www.espn.com/espn/rss/news';
-    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
+    const res = await fetch('https://site.api.espn.com/apis/site/v2/sports/news?limit=20');
     if (!res.ok) throw new Error('Failed');
     const json = await res.json();
-    const xml = new DOMParser().parseFromString(json.contents, 'text/xml');
-    const items = Array.from(xml.querySelectorAll('item')).slice(0, 15);
-    if (items.length === 0) throw new Error('No items');
-    container.innerHTML = items.map(item => {
-      const title = item.querySelector('title')?.textContent || '';
-      const link = item.querySelector('link')?.textContent || '#';
-      const pubDate = item.querySelector('pubDate')?.textContent || '';
+    const articles = json.articles || [];
+    if (articles.length === 0) throw new Error('No articles');
+    container.innerHTML = articles.map(article => {
+      const title = article.headline || '';
+      const link = article.links?.web?.href || article.links?.mobile?.href || '#';
+      const pubDate = article.published || article.lastModified || '';
       const date = pubDate ? new Date(pubDate).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+      const category = article.categories?.[0]?.description || article.sport?.[0]?.description || 'ESPN';
       return `
         <div class="news-item">
           <a href="${link}" target="_blank" rel="noopener noreferrer">${title}</a>
-          <div class="news-meta">ESPN${date ? ' · ' + date : ''}</div>
+          <div class="news-meta">${category}${date ? ' · ' + date : ''}</div>
         </div>
       `;
     }).join('');
