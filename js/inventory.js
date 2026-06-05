@@ -729,120 +729,24 @@ function openSoldModal(card) {
   priceInput?.focus();
 }
 
-// ===== COMPS PANEL =====
-async function openCompsPanel(cardId) {
-  closeCompsPanel();
-  state.openCompsId = cardId;
-
+// ===== COMPS — eBay sold search (no API key required) =====
+function openCompsPanel(cardId) {
   const card = window.AppData.cards.find(c => c.id === cardId);
   if (!card) return;
 
-  const apiKey = sessionStorage.getItem('anthropic_api_key');
-  if (!apiKey) {
-    showToast('Enter your Anthropic API key in Settings (⚙) to use Comps.', 'warning');
-    state.openCompsId = null;
-    return;
-  }
+  // Build a focused eBay sold-listings search query
+  const parts = [card.player, card.year, card.set];
+  if (card.cardNumber) parts.push('#' + card.cardNumber);
+  const cond = conditionValue(card);
+  if (cond && cond !== 'Raw') parts.push(cond);
 
-  // Insert comps row after the card's row
-  const cardRow = document.querySelector(`tr[data-id="${cardId}"]`);
-  if (!cardRow) return;
-
-  const compsRow = document.createElement('tr');
-  compsRow.id = `comps-row-${cardId}`;
-  compsRow.className = 'comps-row';
-
-  const colCount = document.querySelectorAll('#inventory-tbody tr[data-id]:first-child td').length || 19;
-  compsRow.innerHTML = `
-    <td colspan="${colCount}">
-      <div class="comps-panel">
-        <div class="comps-header">
-          <span class="comps-title">eBay Comps — ${card.player} ${card.year} ${card.set}</span>
-          <button class="btn btn-sm" id="comps-close-${cardId}" aria-label="Close comps">✕</button>
-        </div>
-        <div class="comps-result"><span class="spinner"></span> Fetching comps...</div>
-      </div>
-    </td>
-  `;
-  cardRow.after(compsRow);
-
-  document.getElementById(`comps-close-${cardId}`)?.addEventListener('click', closeCompsPanel);
-
-  try {
-    const prompt = buildCompsPrompt(card);
-    const result = await callClaudeComps(prompt, apiKey);
-    const resultEl = compsRow.querySelector('.comps-result');
-    if (resultEl) {
-      resultEl.textContent = result;
-      const ts = document.createElement('div');
-      ts.className = 'comps-timestamp';
-      ts.textContent = `Last checked: ${new Date().toLocaleString()}`;
-      resultEl.after(ts);
-    }
-  } catch (err) {
-    const resultEl = compsRow.querySelector('.comps-result');
-    if (resultEl) {
-      resultEl.textContent = 'Could not fetch comps. Check your API key in settings.';
-      resultEl.style.color = 'var(--accent-red)';
-    }
-  }
+  const query = parts.filter(Boolean).join(' ');
+  const ebayUrl = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(query)}&LH_Sold=1&LH_Complete=1`;
+  window.open(ebayUrl, '_blank', 'noopener,noreferrer');
 }
 
 function closeCompsPanel() {
-  if (state.openCompsId) {
-    document.getElementById(`comps-row-${state.openCompsId}`)?.remove();
-    state.openCompsId = null;
-  }
-}
-
-function buildCompsPrompt(card) {
-  return `Search eBay sold listings and find the average sale price over the past 30 days for this sports card:
-
-Player: ${card.player}
-Year: ${card.year}
-Set: ${card.set}
-Card Number: ${card.cardNumber}
-Sport: ${card.sport}
-Type: ${card.type}
-${card.type === 'Graded' ? `Grade: ${card.grader} ${card.grade}` : `Condition: ${card.condition}`}
-
-Please provide:
-1. The approximate average sold price on eBay over the past 30 days
-2. The price range (low to high)
-3. Number of recent sales you found
-4. Any notes on price trends
-
-Be concise and data-focused.`;
-}
-
-async function callClaudeComps(prompt, apiKey) {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-calls': 'true',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-      messages: [{ role: 'user', content: prompt }],
-    }),
-  });
-
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(err.error?.message || `API error ${response.status}`);
-  }
-
-  const data = await response.json();
-
-  // Extract text from content blocks
-  const textBlocks = (data.content || []).filter(b => b.type === 'text');
-  if (textBlocks.length === 0) throw new Error('No text response');
-  return textBlocks.map(b => b.text).join('\n');
+  // No-op — comps now opens a new tab, nothing inline to close
 }
 
 // ===== CASH DEPOSIT MODAL =====
