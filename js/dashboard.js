@@ -184,25 +184,43 @@ function initNewsPanel() {
   setInterval(fetchNews, 300000);
 }
 
+const NEWS_ENDPOINTS = [
+  { label: 'MLB', url: 'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/news?limit=6' },
+  { label: 'NBA', url: 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/news?limit=6' },
+  { label: 'NFL', url: 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/news?limit=6' },
+  { label: 'NHL', url: 'https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/news?limit=6' },
+];
+
 async function fetchNews() {
   const container = document.getElementById('news-list');
   if (!container) return;
+
   try {
-    const res = await fetch('https://site.api.espn.com/apis/site/v2/sports/news?limit=20');
-    if (!res.ok) throw new Error('Failed');
-    const json = await res.json();
-    const articles = json.articles || [];
+    const results = await Promise.allSettled(
+      NEWS_ENDPOINTS.map(({ label, url }) =>
+        fetch(url).then(r => r.ok ? r.json() : Promise.reject()).then(json =>
+          (json.articles || []).map(a => ({ ...a, _sport: label }))
+        )
+      )
+    );
+
+    const articles = results
+      .filter(r => r.status === 'fulfilled')
+      .flatMap(r => r.value)
+      .sort((a, b) => new Date(b.published || 0) - new Date(a.published || 0))
+      .slice(0, 20);
+
     if (articles.length === 0) throw new Error('No articles');
+
     container.innerHTML = articles.map(article => {
       const title = article.headline || '';
-      const link = article.links?.web?.href || article.links?.mobile?.href || '#';
-      const pubDate = article.published || article.lastModified || '';
+      const link = article.links?.web?.href || '#';
+      const pubDate = article.published || '';
       const date = pubDate ? new Date(pubDate).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
-      const category = article.categories?.[0]?.description || article.sport?.[0]?.description || 'ESPN';
       return `
         <div class="news-item">
           <a href="${link}" target="_blank" rel="noopener noreferrer">${title}</a>
-          <div class="news-meta">${category}${date ? ' · ' + date : ''}</div>
+          <div class="news-meta">${article._sport}${date ? ' · ' + date : ''}</div>
         </div>
       `;
     }).join('');
