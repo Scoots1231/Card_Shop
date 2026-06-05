@@ -15,11 +15,13 @@ document.addEventListener('DOMContentLoaded', () => {
   initNavbar('dashboard');
   startClock();
   renderPortfolioStrip();
+  renderExposure();
   initScoresPanel();
   initNewsPanel();
 
   document.addEventListener('data-loaded', () => {
     renderPortfolioStrip();
+    renderExposure();
   });
 });
 
@@ -64,6 +66,62 @@ function renderPortfolioStrip() {
     plEl.textContent = formatPL(stats.totalPL);
     plEl.className = 'metric-value mono ' + (stats.totalPL >= 0 ? 'text-green' : 'text-red');
   }
+}
+
+// ===== EXPOSURE BREAKDOWN =====
+const SPORT_COLORS = {
+  MLB: '#4a9eff',
+  NBA: '#f5a623',
+  NFL: '#00d084',
+  NHL: '#cc66ff',
+  Other: '#888888',
+};
+
+function renderExposure() {
+  const container = document.getElementById('exposure-rows');
+  const totalEl = document.getElementById('exposure-total');
+  if (!container) return;
+
+  const cards = window.AppData.cards;
+  const sports = ['MLB', 'NBA', 'NFL', 'NHL', 'Other'];
+
+  const costs = {};
+  let totalCost = 0;
+  sports.forEach(s => { costs[s] = 0; });
+
+  for (const card of cards) {
+    const sport = sports.includes(card.sport) ? card.sport : 'Other';
+    costs[sport] += card.purchasePrice || 0;
+    totalCost += card.purchasePrice || 0;
+  }
+
+  if (totalEl) {
+    totalEl.textContent = totalCost > 0 ? `TOTAL COST BASIS: ${formatCurrency(totalCost)}` : '';
+  }
+
+  if (totalCost === 0) {
+    container.innerHTML = '<span style="color:var(--text-secondary);font-size:11px;">No data loaded</span>';
+    return;
+  }
+
+  container.innerHTML = sports.map((sport, i) => {
+    const cost = costs[sport];
+    const pct = totalCost > 0 ? (cost / totalCost) * 100 : 0;
+    const color = SPORT_COLORS[sport];
+    const divider = i < sports.length - 1 ? '<div class="exposure-divider"></div>' : '';
+
+    return `
+      <div class="exposure-sport">
+        <span class="exposure-sport-label">${sport}</span>
+        <div class="exposure-bar-track">
+          <div class="exposure-bar-fill" style="width:${pct.toFixed(1)}%;background:${color};"></div>
+        </div>
+        <span class="exposure-pct" style="color:${color};">${pct.toFixed(1)}%</span>
+        <span class="exposure-cost">${formatCurrency(cost)}</span>
+      </div>
+      ${divider}
+    `;
+  }).join('');
 }
 
 // Editable cash

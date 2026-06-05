@@ -28,6 +28,79 @@
       flex: 1;
       overflow-y: auto;
     }
+
+    .exposure-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      padding: 12px 16px;
+    }
+
+    .exposure-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .exposure-total {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .exposure-rows {
+      display: flex;
+      gap: 0;
+    }
+
+    .exposure-sport {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .exposure-sport-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .exposure-bar-track {
+      height: 4px;
+      background: var(--bg-tertiary);
+      margin-bottom: 5px;
+      overflow: hidden;
+    }
+
+    .exposure-bar-fill {
+      height: 100%;
+      transition: width 0.4s ease;
+    }
+
+    .exposure-pct {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 500;
+      display: block;
+    }
+
+    .exposure-cost {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-secondary);
+      display: block;
+      margin-top: 1px;
+    }
+
+    .exposure-divider {
+      width: 1px;
+      background: var(--border);
+      margin: 0 14px;
+      flex-shrink: 0;
+    }
   </style>
 </head>
 <body>
@@ -83,6 +156,17 @@
       <div class="metric-card">
         <span class="label">Total P&amp;L</span>
         <span class="metric-value mono text-green" id="metric-pl">+$0.00</span>
+      </div>
+    </div>
+
+    <!-- Exposure breakdown -->
+    <div class="exposure-box" id="exposure-box" role="region" aria-label="Portfolio exposure by sport" style="margin-top:16px;">
+      <div class="exposure-header">
+        <span class="label" style="margin:0;">Exposure</span>
+        <span class="exposure-total" id="exposure-total"></span>
+      </div>
+      <div class="exposure-rows" id="exposure-rows">
+        <span style="color:var(--text-secondary);font-size:11px;">No data loaded</span>
       </div>
     </div>
 
