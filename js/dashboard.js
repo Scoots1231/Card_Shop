@@ -7,7 +7,6 @@ const SPORTS_ENDPOINTS = {
   NHL: 'https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard',
 };
 
-let currentSport = 'MLB';
 
 document.addEventListener('DOMContentLoaded', () => {
   initNavbar('dashboard');
@@ -15,7 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
   renderPortfolioStrip();
   renderExposure();
   initTicker();
-  initScoresPanel();
   initNewsPanel();
   document.addEventListener('data-loaded', () => {
     renderPortfolioStrip();
@@ -176,61 +174,6 @@ function renderExposure() {
         <span class="exposure-cost">${formatCurrency(cost)}</span>
       </div>
       ${divider}
-    `;
-  }).join('');
-}
-
-// ===== SCORES PANEL =====
-function initScoresPanel() {
-  const tabs = document.querySelectorAll('.sport-tab');
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      currentSport = tab.dataset.sport;
-      fetchScores();
-    });
-  });
-  fetchScores();
-  setInterval(fetchScores, 60000);
-}
-
-async function fetchScores() {
-  const container = document.getElementById('scores-list');
-  if (!container) return;
-  try {
-    const res = await fetch(SPORTS_ENDPOINTS[currentSport]);
-    if (!res.ok) throw new Error('Network error');
-    renderScores(await res.json(), container);
-  } catch {
-    container.innerHTML = '<p style="padding:16px;color:var(--text-secondary);font-size:12px;">Scores unavailable</p>';
-  }
-}
-
-function renderScores(data, container) {
-  const events = data.events || [];
-  if (events.length === 0) {
-    container.innerHTML = '<p style="padding:16px;color:var(--text-secondary);font-size:12px;">No games scheduled</p>';
-    return;
-  }
-  container.innerHTML = events.map(event => {
-    const comps = event.competitions?.[0];
-    const competitors = comps?.competitors || [];
-    const home = competitors.find(c => c.homeAway === 'home');
-    const away = competitors.find(c => c.homeAway === 'away');
-    const status = comps?.status?.type;
-    const isLive = status?.state === 'in';
-    const isFinal = status?.state === 'post';
-    const statusText = isLive ? (status?.shortDetail || 'LIVE') : isFinal ? 'FINAL' : (status?.shortDetail || status?.description || 'SCHEDULED');
-    return `
-      <div class="score-item">
-        <div class="score-team">${away?.team?.abbreviation || ''}</div>
-        <div class="score-center">
-          <span class="score-value" style="color:var(--accent-amber);">${away?.score ?? '-'} - ${home?.score ?? '-'}</span>
-          <span class="score-status">${isLive ? '<span class="live-dot"></span>' : ''}${statusText}</span>
-        </div>
-        <div class="score-team home">${home?.team?.abbreviation || ''}</div>
-      </div>
     `;
   }).join('');
 }

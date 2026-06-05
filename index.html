@@ -8,25 +8,17 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <style>
-    .dashboard-main {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-top: 24px;
-    }
-    .scores-panel {
-      height: 520px;
-      display: flex;
-      flex-direction: column;
-    }
     .news-panel {
-      height: 520px;
+      height: 400px;
       display: flex;
       flex-direction: column;
     }
-    #scores-list, #news-list {
+    #news-list {
       flex: 1;
       overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      align-content: start;
     }
 
     .score-ticker {
@@ -255,26 +247,8 @@
       </div>
     </div>
 
-    <!-- Main content grid -->
-    <div class="dashboard-main">
-      <!-- Live Scores -->
-      <section class="panel scores-panel" aria-label="Live sports scores">
-        <div class="panel-header">
-          <span class="panel-title">Live Scores</span>
-          <span class="text-muted" style="font-size:10px;font-family:var(--font-mono);">AUTO-REFRESH 60s</span>
-        </div>
-        <div class="sport-tabs" role="tablist" aria-label="Sport selection">
-          <button class="sport-tab active" data-sport="MLB" role="tab" aria-selected="true">MLB</button>
-          <button class="sport-tab" data-sport="NBA" role="tab" aria-selected="false">NBA</button>
-          <button class="sport-tab" data-sport="NFL" role="tab" aria-selected="false">NFL</button>
-          <button class="sport-tab" data-sport="NHL" role="tab" aria-selected="false">NHL</button>
-        </div>
-        <div class="panel-body" id="scores-list" aria-live="polite">
-          <p style="padding:16px;color:var(--text-secondary);font-size:12px;">Loading scores...</p>
-        </div>
-      </section>
-
-      <!-- News -->
+    <!-- News (full width) -->
+    <div class="section-gap">
       <section class="panel news-panel" aria-label="Sports news headlines">
         <div class="panel-header">
           <span class="panel-title">Sports News</span>
