@@ -18,27 +18,12 @@ document.addEventListener('DOMContentLoaded', () => {
   renderExposure();
   initScoresPanel();
   initNewsPanel();
-  bindPageDataButtons();
-
   document.addEventListener('data-loaded', () => {
     renderPortfolioStrip();
     renderExposure();
   });
 });
 
-function bindPageDataButtons() {
-  document.getElementById('page-import-btn')?.addEventListener('click', () => {
-    document.getElementById('csv-file-input').click();
-  });
-  document.getElementById('page-export-btn')?.addEventListener('click', () => {
-    if (window.AppData.cards.length === 0) {
-      showToast('No data to export.', 'warning');
-      return;
-    }
-    exportCSV(window.AppData.cards, window.AppData.cash);
-    showToast('CSV exported.', 'success');
-  });
-}
 
 // ===== LIVE CLOCK =====
 function startClock() {
