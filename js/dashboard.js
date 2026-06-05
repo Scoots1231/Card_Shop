@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   startClock();
   renderPortfolioStrip();
   renderExposure();
+  initTicker();
   initScoresPanel();
   initNewsPanel();
   document.addEventListener('data-loaded', () => {
@@ -21,6 +22,70 @@ document.addEventListener('DOMContentLoaded', () => {
     renderExposure();
   });
 });
+
+// ===== SCORE TICKER =====
+async function initTicker() {
+  await fetchTickerScores();
+  setInterval(fetchTickerScores, 60000);
+}
+
+async function fetchTickerScores() {
+  const sportLabels = { MLB: 'MLB', NBA: 'NBA', NFL: 'NFL', NHL: 'NHL' };
+  const items = [];
+
+  await Promise.allSettled(
+    Object.entries(SPORTS_ENDPOINTS).map(async ([sport, url]) => {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const data = await res.json();
+        for (const event of (data.events || [])) {
+          const comps = event.competitions?.[0];
+          const competitors = comps?.competitors || [];
+          const home = competitors.find(c => c.homeAway === 'home');
+          const away = competitors.find(c => c.homeAway === 'away');
+          if (!home || !away) continue;
+          const status = comps?.status?.type;
+          const isLive = status?.state === 'in';
+          const isFinal = status?.state === 'post';
+          const statusText = isLive ? (status?.shortDetail || 'LIVE')
+            : isFinal ? 'FINAL'
+            : (status?.shortDetail || 'SCHED');
+          items.push({
+            sport,
+            away: away.team?.abbreviation || '',
+            home: home.team?.abbreviation || '',
+            awayScore: away.score ?? '',
+            homeScore: home.score ?? '',
+            status: statusText,
+            isLive,
+          });
+        }
+      } catch {}
+    })
+  );
+
+  const track = document.getElementById('ticker-track');
+  if (!track) return;
+
+  if (items.length === 0) {
+    track.innerHTML = '<span class="ticker-item" style="opacity:0.5;">No games today</span>';
+    return;
+  }
+
+  const html = items.map(g => `
+    <span class="ticker-item">
+      <span class="ticker-sport">${g.sport}</span>
+      ${g.isLive ? '<span class="ticker-live-dot"></span>' : ''}
+      <span class="ticker-teams">${g.away} vs ${g.home}</span>
+      ${g.awayScore !== '' ? `<span class="ticker-score">${g.awayScore}–${g.homeScore}</span>` : ''}
+      <span class="ticker-status">${g.status}</span>
+    </span>
+  `).join('');
+
+  // Duplicate for seamless loop
+  track.innerHTML = html + html;
+}
 
 // ===== LIVE CLOCK =====
 function startClock() {

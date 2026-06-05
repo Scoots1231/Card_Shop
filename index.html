@@ -29,6 +29,84 @@
       overflow-y: auto;
     }
 
+    .score-ticker {
+      position: fixed;
+      top: var(--nav-height);
+      left: 0;
+      right: 0;
+      height: 28px;
+      background: #0a0a0a;
+      border-bottom: 1px solid #f5a62344;
+      z-index: 999;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+    }
+
+    .ticker-track {
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      animation: ticker-scroll 60s linear infinite;
+      gap: 0;
+    }
+
+    .ticker-track:hover {
+      animation-play-state: paused;
+    }
+
+    @keyframes ticker-scroll {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .ticker-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 20px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #f5a623;
+      border-right: 1px solid #f5a62330;
+    }
+
+    .ticker-sport {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      opacity: 0.6;
+      background: #f5a62322;
+      padding: 1px 4px;
+    }
+
+    .ticker-teams {
+      font-weight: 500;
+    }
+
+    .ticker-score {
+      font-weight: 700;
+    }
+
+    .ticker-status {
+      font-size: 9px;
+      opacity: 0.65;
+      letter-spacing: 0.04em;
+    }
+
+    .ticker-live-dot {
+      display: inline-block;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #00d084;
+      animation: pulse 1.5s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    /* push page content down to account for ticker */
+    body { padding-top: calc(var(--nav-height) + 28px); }
+
     .exposure-box {
       background: var(--bg-secondary);
       border: 1px solid var(--border);
@@ -130,6 +208,13 @@
     </div>
     <input type="file" id="csv-file-input" accept=".csv" style="display:none" aria-hidden="true">
   </nav>
+
+  <!-- SCORE TICKER -->
+  <div class="score-ticker" id="score-ticker" aria-label="Live scores ticker" aria-live="polite">
+    <div class="ticker-track" id="ticker-track">
+      <span class="ticker-item" style="opacity:0.5;">Loading scores&hellip;</span>
+    </div>
+  </div>
 
   <!-- PAGE CONTENT -->
   <main class="page-content">
