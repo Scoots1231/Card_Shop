@@ -170,8 +170,7 @@ function renderRow(card, rowNum) {
     ? '<span class="badge badge-gray">SOLD</span>'
     : '<span class="badge badge-blue">IN STORAGE</span>';
   const hasImages = card.frontImageUrl || card.backImageUrl;
-  const gradeDisplay = card.type === 'Graded' ? `${card.grader} ${card.grade}`.trim() : '';
-  const condDisplay = card.type === 'Raw' ? card.condition : '';
+  const condDisplay = conditionValue(card);
 
   return `
     <tr data-id="${card.id}" data-row="${rowNum}">
@@ -182,8 +181,7 @@ function renderRow(card, rowNum) {
       <td>${card.cardNumber || ''}</td>
       <td class="text-col">${card.sport || ''}</td>
       <td>${card.type || ''}</td>
-      <td>${gradeDisplay}</td>
-      <td>${condDisplay}</td>
+      <td colspan="2">${condDisplay}</td>
       <td>${card.purchasePrice ? formatCurrency(card.purchasePrice) : ''}</td>
       <td>${card.purchaseDate || ''}</td>
       <td class="text-col">${card.source || ''}</td>
@@ -363,40 +361,28 @@ function openModal(card) {
           </div>
 
           <hr class="form-divider">
-          <p class="form-section-title">Type &amp; Condition</p>
+          <p class="form-section-title">Condition</p>
 
           <div class="form-group">
-            <label>Type <span class="required">*</span></label>
-            <div class="radio-group">
-              <label><input type="radio" name="f-type" value="Raw" ${(!card||card.type==='Raw')?'checked':''}> Raw</label>
-              <label><input type="radio" name="f-type" value="Graded" ${card?.type==='Graded'?'checked':''}> Graded</label>
-            </div>
-          </div>
-
-          <div id="graded-fields" style="display:${card?.type==='Graded'?'block':'none'}">
-            <div class="form-row">
-              <div class="form-group">
-                <label for="f-grader">Grader</label>
-                <select id="f-grader" class="form-control">
-                  ${['PSA','BGS','SGC','CGC','Other'].map(g => `<option${card?.grader===g?' selected':''}>${g}</option>`).join('')}
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="f-grade">Grade</label>
-                <select id="f-grade" class="form-control">
-                  ${['10','9.5','9','8.5','8','7.5','7','6.5','6','5.5','5','4.5','4','3.5','3','2.5','2','1.5','1'].map(g => `<option${card?.grade===g?' selected':''}>${g}</option>`).join('')}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div id="raw-fields" style="display:${(!card||card.type==='Raw')?'block':'none'}">
-            <div class="form-group">
-              <label for="f-condition">Condition</label>
-              <select id="f-condition" class="form-control">
-                ${['Mint','NM-MT','NM','EX-MT','EX','VG-EX','VG','Good','Poor'].map(c => `<option${card?.condition===c?' selected':''}>${c}</option>`).join('')}
-              </select>
-            </div>
+            <label for="f-condition">Condition <span class="required">*</span></label>
+            <select id="f-condition" class="form-control">
+              <optgroup label="PSA">
+                ${[10,9,8,7,6,5,4,3,2,1].map(n => {
+                  const val = `PSA ${n}`;
+                  const sel = conditionValue(card) === val ? ' selected' : '';
+                  return `<option${sel}>${val}</option>`;
+                }).join('')}
+              </optgroup>
+              <optgroup label="BGS">
+                ${[10,9.5,9,8.5,8,7.5,7,6.5,6,5.5,5,4.5,4,3.5,3,2.5,2,1.5,1].map(n => {
+                  const val = `BGS ${n}`;
+                  const sel = conditionValue(card) === val ? ' selected' : '';
+                  return `<option${sel}>${val}</option>`;
+                }).join('')}
+              </optgroup>
+              <option value="Sealed"${conditionValue(card)==='Sealed'?' selected':''}>Sealed</option>
+              <option value="Raw"${(!card||conditionValue(card)==='Raw'||conditionValue(card)==='')?' selected':''}>Raw</option>
+            </select>
           </div>
 
           <hr class="form-divider">
@@ -477,14 +463,6 @@ function openModal(card) {
 
   document.body.appendChild(overlay);
 
-  // Type radio toggle
-  overlay.querySelectorAll('input[name="f-type"]').forEach(r => {
-    r.addEventListener('change', () => {
-      document.getElementById('graded-fields').style.display = r.value === 'Graded' ? 'block' : 'none';
-      document.getElementById('raw-fields').style.display = r.value === 'Raw' ? 'block' : 'none';
-    });
-  });
-
   // Status radio toggle
   overlay.querySelectorAll('input[name="f-status"]').forEach(r => {
     r.addEventListener('change', () => {
@@ -504,6 +482,14 @@ function openModal(card) {
   document.getElementById('f-player')?.focus();
 }
 
+// Returns the unified condition string for a card (used to pre-select modal dropdown)
+function conditionValue(card) {
+  if (!card) return 'Raw';
+  if (card.type === 'Graded' && card.grader && card.grade) return `${card.grader} ${card.grade}`;
+  if (card.condition) return card.condition;
+  return 'Raw';
+}
+
 function esc(val) {
   if (val === null || val === undefined) return '';
   return String(val).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -521,8 +507,19 @@ function saveCard(existingId) {
     return;
   }
 
-  const type = document.querySelector('input[name="f-type"]:checked')?.value || 'Raw';
+  const condVal = document.getElementById('f-condition').value;
   const status = document.querySelector('input[name="f-status"]:checked')?.value || 'In Storage';
+
+  // Parse condition into type/grader/grade/condition fields
+  let type = 'Raw', grader = '', grade = '', condition = condVal;
+  if (condVal.startsWith('PSA ')) {
+    type = 'Graded'; grader = 'PSA'; grade = condVal.slice(4); condition = '';
+  } else if (condVal.startsWith('BGS ')) {
+    type = 'Graded'; grader = 'BGS'; grade = condVal.slice(4); condition = '';
+  } else {
+    type = condVal === 'Sealed' ? 'Sealed' : 'Raw';
+    condition = condVal;
+  }
 
   const cardData = {
     id: existingId || generateId(),
@@ -532,9 +529,9 @@ function saveCard(existingId) {
     cardNumber: document.getElementById('f-cardnum').value.trim(),
     sport: document.getElementById('f-sport').value,
     type,
-    grader: type === 'Graded' ? document.getElementById('f-grader').value : '',
-    grade: type === 'Graded' ? document.getElementById('f-grade').value : '',
-    condition: type === 'Raw' ? document.getElementById('f-condition').value : '',
+    grader,
+    grade,
+    condition,
     purchasePrice: parseFloat(purchasePrice) || 0,
     purchaseDate,
     source: document.getElementById('f-source').value.trim(),
