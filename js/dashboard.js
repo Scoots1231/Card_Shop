@@ -145,6 +145,7 @@ function initCashEdit() {
     const commit = () => {
       const val = parseFloat(input.value);
       window.AppData.cash = isNaN(val) ? current : Math.max(0, val);
+      saveSessionData();
       const newEl = document.createElement('span');
       newEl.id = 'metric-cash';
       newEl.className = 'metric-value mono editable';

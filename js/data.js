@@ -1,5 +1,6 @@
 // ===== DATA LAYER =====
 // All data lives in memory. CSV is the only persistence mechanism.
+// AppData is mirrored to sessionStorage so it survives page navigation within the same tab.
 
 const CSV_HEADERS = [
   'id', 'player', 'year', 'set', 'cardNumber', 'sport', 'type',
@@ -9,11 +10,31 @@ const CSV_HEADERS = [
 ];
 
 const CASH_ID = '__CASH__';
+const SESSION_KEY = 'card_manager_data';
 
-// In-memory store
+// Load from sessionStorage if available, otherwise start empty
+function loadSessionData() {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return { cards: [], cash: 0 };
+}
+
+function saveSessionData() {
+  try {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+      cards: window.AppData.cards,
+      cash: window.AppData.cash,
+    }));
+  } catch {}
+}
+
+// In-memory store — initialised from sessionStorage
+const _session = loadSessionData();
 window.AppData = {
-  cards: [],
-  cash: 0,
+  cards: _session.cards,
+  cash: _session.cash,
 };
 
 function generateId() {
@@ -119,6 +140,7 @@ function importCSV(file) {
 
         window.AppData.cards = cards;
         window.AppData.cash = cash;
+        saveSessionData();
         resolve({ cards, cash });
       } catch (err) {
         reject(err);

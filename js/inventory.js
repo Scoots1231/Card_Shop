@@ -197,6 +197,7 @@ function attachRowHandlers(tbody, cards) {
       e.stopPropagation();
       if (!confirm('Delete this card?')) return;
       window.AppData.cards = window.AppData.cards.filter(c => c.id !== btn.dataset.id);
+      saveSessionData();
       showToast('Card deleted.', 'success');
       render();
     });
@@ -518,6 +519,7 @@ function saveCard(existingId) {
     window.AppData.cards.push(cardData);
   }
 
+  saveSessionData();
   document.getElementById('card-modal-overlay')?.remove();
   showToast(existingId ? 'Card updated.' : 'Card added.', 'success');
   render();
@@ -695,6 +697,7 @@ function openCashModal() {
       return;
     }
     window.AppData.cash += amt;
+    saveSessionData();
     showToast(`${formatCurrency(amt)} added. Cash on hand: ${formatCurrency(window.AppData.cash)}`, 'success');
     close();
   });
