@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Card Manager — Analytics</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <style>
+    .analytics-row {
+      display: grid;
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .analytics-row-2col {
+      grid-template-columns: 1fr 1fr;
+    }
+    .donut-inner {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+    .donut-canvas-wrap {
+      width: 200px;
+      flex-shrink: 0;
+    }
+    .donut-legend {
+      flex: 1;
+    }
+    .pl-bar-wrap {
+      height: 220px;
+      position: relative;
+    }
+    .pl-time-wrap {
+      height: 280px;
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+  <div class="mobile-banner">Best viewed on desktop (900px+ wide)</div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="main-nav" aria-label="Main navigation">
+    <a href="index.html" class="nav-brand" aria-label="Card Manager home">CARD MANAGER</a>
+    <ul class="nav-links" role="list">
+      <li><a href="index.html" data-page="dashboard">Dashboard</a></li>
+      <li><a href="inventory.html" data-page="inventory">Inventory</a></li>
+      <li><a href="analytics.html" data-page="analytics">Analytics</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="btn" id="import-btn" aria-label="Import CSV">
+        <i class="ti ti-upload"></i> Import CSV
+      </button>
+      <button class="btn" id="export-btn" aria-label="Export CSV">
+        <i class="ti ti-download"></i> Export CSV
+      </button>
+      <button class="btn-icon" id="settings-btn" aria-label="Settings">
+        <i class="ti ti-settings"></i>
+      </button>
+      <button class="btn-icon" id="theme-toggle" aria-label="Toggle theme">
+        <i class="ti ti-sun"></i>
+      </button>
+    </div>
+    <input type="file" id="csv-file-input" accept=".csv" style="display:none" aria-hidden="true">
+  </nav>
+
+  <!-- PAGE CONTENT -->
+  <main class="page-content">
+    <div style="margin-bottom:16px;">
+      <h1 class="section-header" style="border:none;margin:0;padding:0;">Analytics</h1>
+    </div>
+
+    <!-- Summary strip (same 4 as dashboard) -->
+    <div class="grid-4" role="region" aria-label="Portfolio summary">
+      <div class="metric-card">
+        <span class="label">Cash on Hand</span>
+        <span class="metric-value mono" id="a-metric-cash">$0.00</span>
+      </div>
+      <div class="metric-card">
+        <span class="label">Cards in Inventory</span>
+        <span class="metric-value mono text-blue" id="a-metric-cards">0</span>
+      </div>
+      <div class="metric-card">
+        <span class="label">Portfolio Value</span>
+        <span class="metric-value mono" id="a-metric-value">$0.00</span>
+      </div>
+      <div class="metric-card">
+        <span class="label">Total P&amp;L</span>
+        <span class="metric-value mono text-green" id="a-metric-pl">+$0.00</span>
+      </div>
+    </div>
+
+    <!-- Row 1: Sport donut + P&L by sport -->
+    <div class="analytics-row analytics-row-2col">
+      <!-- Sport breakdown donut -->
+      <div class="chart-card" role="region" aria-label="Sport breakdown">
+        <div class="chart-header">
+          <span class="section-header" style="margin:0;padding:0;border:none;">Sport Breakdown</span>
+          <div class="chart-controls" role="group" aria-label="Filter sport breakdown">
+            <button class="chart-toggle sport-donut-toggle active" data-filter="all">All</button>
+            <button class="chart-toggle sport-donut-toggle" data-filter="storage">In Storage</button>
+            <button class="chart-toggle sport-donut-toggle" data-filter="sold">Sold</button>
+          </div>
+        </div>
+        <div class="donut-inner">
+          <div class="donut-canvas-wrap">
+            <canvas id="sport-donut-chart" aria-label="Sport breakdown donut chart"></canvas>
+          </div>
+          <div class="donut-legend" id="sport-donut-legend"></div>
+        </div>
+      </div>
+
+      <!-- P&L by sport -->
+      <div class="chart-card" role="region" aria-label="P&amp;L by sport">
+        <div class="chart-header">
+          <span class="section-header" style="margin:0;padding:0;border:none;">P&amp;L by Sport</span>
+          <div class="chart-controls" role="group" aria-label="P&amp;L mode">
+            <button class="chart-toggle pl-mode-toggle active" data-mode="combined">Combined</button>
+            <button class="chart-toggle pl-mode-toggle" data-mode="realized">Realized</button>
+            <button class="chart-toggle pl-mode-toggle" data-mode="unrealized">Unrealized</button>
+          </div>
+        </div>
+        <div class="pl-bar-wrap">
+          <canvas id="pl-sport-chart" aria-label="P&amp;L by sport bar chart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: P&L over time -->
+    <div class="analytics-row" style="margin-top:16px;">
+      <div class="chart-card" role="region" aria-label="Portfolio P&amp;L over time">
+        <div class="chart-header">
+          <span class="section-header" style="margin:0;padding:0;border:none;">Portfolio P&amp;L Over Time</span>
+        </div>
+        <div class="pl-time-wrap">
+          <canvas id="pl-time-chart" aria-label="Portfolio P&amp;L over time line chart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: Top Winners + Top Losers -->
+    <div class="analytics-row analytics-row-2col" style="margin-top:16px;">
+      <!-- Top Winners -->
+      <div class="chart-card" role="region" aria-label="Top winners">
+        <div class="chart-header">
+          <span class="section-header" style="margin:0;padding:0;border:none;">Top Winners</span>
+        </div>
+        <div class="table-wrapper" style="border:none;">
+          <table aria-label="Top winning cards">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Year</th>
+                <th>Set</th>
+                <th>Type</th>
+                <th>Bought</th>
+                <th>Value/Sold</th>
+                <th>P&amp;L</th>
+                <th>% Gain</th>
+              </tr>
+            </thead>
+            <tbody id="winners-tbody">
+              <tr class="no-data-row"><td colspan="9">No data</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Top Losers -->
+      <div class="chart-card" role="region" aria-label="Top losers">
+        <div class="chart-header">
+          <span class="section-header" style="margin:0;padding:0;border:none;">Top Losers</span>
+        </div>
+        <div class="table-wrapper" style="border:none;">
+          <table aria-label="Top losing cards">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Year</th>
+                <th>Set</th>
+                <th>Type</th>
+                <th>Bought</th>
+                <th>Value/Sold</th>
+                <th>P&amp;L</th>
+                <th>% Loss</th>
+              </tr>
+            </thead>
+            <tbody id="losers-tbody">
+              <tr class="no-data-row"><td colspan="9">No data</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/analytics.js"></script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Card Manager — Inventory</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+</head>
+<body>
+  <div class="mobile-banner">Best viewed on desktop (900px+ wide)</div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="main-nav" aria-label="Main navigation">
+    <a href="index.html" class="nav-brand" aria-label="Card Manager home">CARD MANAGER</a>
+    <ul class="nav-links" role="list">
+      <li><a href="index.html" data-page="dashboard">Dashboard</a></li>
+      <li><a href="inventory.html" data-page="inventory">Inventory</a></li>
+      <li><a href="analytics.html" data-page="analytics">Analytics</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="btn" id="import-btn" aria-label="Import CSV">
+        <i class="ti ti-upload"></i> Import CSV
+      </button>
+      <button class="btn" id="export-btn" aria-label="Export CSV">
+        <i class="ti ti-download"></i> Export CSV
+      </button>
+      <button class="btn-icon" id="settings-btn" aria-label="Settings">
+        <i class="ti ti-settings"></i>
+      </button>
+      <button class="btn-icon" id="theme-toggle" aria-label="Toggle theme">
+        <i class="ti ti-sun"></i>
+      </button>
+    </div>
+    <input type="file" id="csv-file-input" accept=".csv" style="display:none" aria-hidden="true">
+  </nav>
+
+  <!-- PAGE CONTENT -->
+  <main class="page-content">
+    <div style="margin-bottom:16px;">
+      <h1 class="section-header" style="border:none;margin:0;padding:0;">Inventory</h1>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar" role="search" aria-label="Inventory filters">
+      <input
+        type="text"
+        id="search-input"
+        placeholder="Search player..."
+        aria-label="Search by player name"
+        autocomplete="off"
+      >
+      <select id="sport-filter" aria-label="Filter by sport">
+        <option value="All">All Sports</option>
+        <option value="MLB">MLB</option>
+        <option value="NBA">NBA</option>
+        <option value="NFL">NFL</option>
+        <option value="NHL">NHL</option>
+        <option value="Other">Other</option>
+      </select>
+      <select id="status-filter" aria-label="Filter by status">
+        <option value="All">All Status</option>
+        <option value="In Storage">In Storage</option>
+        <option value="Sold">Sold</option>
+      </select>
+      <select id="sort-select" aria-label="Sort cards">
+        <option value="purchaseDate:desc">Date Added (Newest)</option>
+        <option value="purchaseDate:asc">Date Added (Oldest)</option>
+        <option value="player:asc">Player Name (A–Z)</option>
+        <option value="player:desc">Player Name (Z–A)</option>
+        <option value="purchasePrice:asc">Purchase Price (Low)</option>
+        <option value="purchasePrice:desc">Purchase Price (High)</option>
+        <option value="estimatedValue:asc">Est. Value (Low)</option>
+        <option value="estimatedValue:desc">Est. Value (High)</option>
+        <option value="pl:asc">P&amp;L (Low)</option>
+        <option value="pl:desc">P&amp;L (High)</option>
+      </select>
+      <button class="btn btn-primary" id="add-card-btn" aria-label="Add new card">
+        <i class="ti ti-plus"></i> Add Card
+      </button>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="stats-bar" role="region" aria-label="Inventory statistics">
+      <div class="stat-item">
+        <span class="stat-label">Total Cards</span>
+        <span class="stat-value" id="stat-total">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">In Storage</span>
+        <span class="stat-value text-blue" id="stat-storage">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Sold</span>
+        <span class="stat-value text-muted" id="stat-sold">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Total Invested</span>
+        <span class="stat-value mono" id="stat-invested">$0.00</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Current Value</span>
+        <span class="stat-value mono" id="stat-value">$0.00</span>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrapper">
+      <table aria-label="Card inventory">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Player</th>
+            <th>Year</th>
+            <th>Set</th>
+            <th>Card #</th>
+            <th>Sport</th>
+            <th>Type</th>
+            <th>Grade</th>
+            <th>Condition</th>
+            <th>Bought</th>
+            <th>Buy Date</th>
+            <th>Source</th>
+            <th>Est. Value</th>
+            <th>Sale Price</th>
+            <th>Sale Date</th>
+            <th>Platform</th>
+            <th>P&amp;L</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="inventory-tbody">
+          <tr class="no-data-row">
+            <td colspan="19">No data loaded. Import a CSV to get started.</td>
+          </tr>
+        </tbody>
+      </table>
+      <!-- Pagination -->
+      <div class="pagination" aria-label="Table pagination">
+        <span class="pagination-info" id="pagination-info">0 records</span>
+        <div class="pagination-controls" id="pagination-controls" role="navigation" aria-label="Page navigation"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="js/data.js"></script>
+  <script src="js/inventory.js"></script>
+</body>
+</html>
