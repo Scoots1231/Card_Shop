@@ -55,17 +55,24 @@ function bindToolbar() {
 function getFilteredCards() {
   let cards = window.AppData.cards.slice();
 
+  // Cash deposits: always show unless a specific non-cash status filter is active
   if (state.search) {
     cards = cards.filter(c => c.player.toLowerCase().includes(state.search));
   }
   if (state.sport !== 'All') {
-    cards = cards.filter(c => c.sport === state.sport);
+    // Cash deposits have no sport — hide them when a sport filter is active
+    cards = cards.filter(c => isCashDeposit(c) ? false : c.sport === state.sport);
   }
   if (state.status !== 'All') {
+    // Cash deposits have status 'Cash Deposit' — hide when filtering by In Storage/Sold
     cards = cards.filter(c => c.status === state.status);
   }
 
+  // Sort cash deposits to the bottom regardless of sort field
   cards.sort((a, b) => {
+    const aCash = isCashDeposit(a), bCash = isCashDeposit(b);
+    if (aCash && !bCash) return 1;
+    if (!aCash && bCash) return -1;
     let va, vb;
     switch (state.sortField) {
       case 'player': va = a.player.toLowerCase(); vb = b.player.toLowerCase(); break;
@@ -89,7 +96,8 @@ function render() {
 }
 
 function renderStatsBar() {
-  const cards = window.AppData.cards;
+  const all = window.AppData.cards;
+  const cards = all.filter(c => !isCashDeposit(c));
   const unsold = cards.filter(c => c.status !== 'Sold');
   const sold = cards.filter(c => c.status === 'Sold');
   const totalInvested = cards.reduce((s, c) => s + (c.purchasePrice || 0), 0);
@@ -130,6 +138,31 @@ function renderTable() {
 }
 
 function renderRow(card, rowNum) {
+  // ---- Cash Deposit row ----
+  if (isCashDeposit(card)) {
+    return `
+      <tr data-id="${card.id}" data-row="${rowNum}" style="opacity:0.75;" title="Cash Deposit">
+        <td>${rowNum}</td>
+        <td class="text-col" colspan="8" style="color:var(--accent-green);font-weight:600;letter-spacing:0.06em;">
+          <i class="ti ti-cash" style="margin-right:6px;"></i>CASH DEPOSIT
+        </td>
+        <td style="color:var(--accent-green);font-weight:600;">${formatCurrency(card.purchasePrice)}</td>
+        <td>${card.purchaseDate || ''}</td>
+        <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+        <td><span class="badge badge-green">CASH</span></td>
+        <td>
+          <div class="action-cell" onclick="event.stopPropagation()">
+            <button class="btn-delete" data-id="${card.id}" aria-label="Delete deposit"
+              style="color:var(--accent-red);border-color:var(--accent-red);padding:2px 7px;font-size:11px;font-weight:600;letter-spacing:0.04em;">
+              <i class="ti ti-trash"></i> DELETE
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+
+  // ---- Normal card row ----
   const pl = calculatePL(card);
   const plClass = pl >= 0 ? 'text-green' : 'text-red';
   const plText = formatPL(pl);
@@ -164,7 +197,10 @@ function renderRow(card, rowNum) {
         <div class="action-cell" onclick="event.stopPropagation()">
           ${hasImages ? `<button class="btn-img" data-id="${card.id}" title="View images" aria-label="View card images"><i class="ti ti-camera"></i></button>` : ''}
           <button class="btn-edit" data-id="${card.id}" aria-label="Edit card"><i class="ti ti-pencil"></i></button>
-          <button class="btn-delete" data-id="${card.id}" aria-label="Delete card" style="color:var(--accent-red);border-color:var(--accent-red);padding:2px 7px;font-size:11px;font-weight:600;letter-spacing:0.04em;"><i class="ti ti-trash"></i> DELETE</button>
+          <button class="btn-delete" data-id="${card.id}" aria-label="Delete card"
+            style="color:var(--accent-red);border-color:var(--accent-red);padding:2px 7px;font-size:11px;font-weight:600;letter-spacing:0.04em;">
+            <i class="ti ti-trash"></i> DELETE
+          </button>
           <button class="btn-comps" data-id="${card.id}" aria-label="Check comps">COMPS</button>
         </div>
       </td>
@@ -173,12 +209,12 @@ function renderRow(card, rowNum) {
 }
 
 function attachRowHandlers(tbody, cards) {
-  // Row click → edit
+  // Row click → edit (skip cash deposit rows)
   tbody.querySelectorAll('tr[data-id]').forEach(tr => {
     tr.addEventListener('click', e => {
       if (e.target.closest('.action-cell')) return;
       const card = cards.find(c => c.id === tr.dataset.id);
-      if (card) openModal(card);
+      if (card && !isCashDeposit(card)) openModal(card);
     });
   });
 
@@ -646,7 +682,7 @@ function openCashModal() {
   const existing = document.getElementById('cash-modal-overlay');
   if (existing) existing.remove();
 
-  const current = window.AppData.cash;
+  const current = getCashOnHand(window.AppData.cards);
   const overlay = document.createElement('div');
   overlay.id = 'cash-modal-overlay';
   overlay.className = 'modal-overlay centered';
@@ -662,9 +698,15 @@ function openCashModal() {
           <label style="color:var(--text-secondary);font-size:11px;text-transform:uppercase;letter-spacing:.06em;">Current Cash on Hand</label>
           <div style="font-family:var(--font-mono);font-size:22px;font-weight:500;margin:6px 0 16px;">${formatCurrency(current)}</div>
         </div>
-        <div class="form-group">
-          <label for="cash-deposit-input">Deposit Amount <span style="color:var(--accent-red);">*</span></label>
-          <input type="number" id="cash-deposit-input" class="form-control mono" min="0.01" step="0.01" placeholder="0.00" autofocus>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="cash-deposit-input">Deposit Amount <span style="color:var(--accent-red);">*</span></label>
+            <input type="number" id="cash-deposit-input" class="form-control mono" min="0.01" step="0.01" placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label for="cash-deposit-date">Date <span style="color:var(--accent-red);">*</span></label>
+            <input type="date" id="cash-deposit-date" class="form-control" value="${new Date().toISOString().slice(0,10)}">
+          </div>
         </div>
         <div id="cash-new-total" style="font-size:12px;color:var(--text-secondary);margin-top:4px;font-family:var(--font-mono);"></div>
       </div>
@@ -692,14 +734,29 @@ function openCashModal() {
 
   document.getElementById('cash-modal-save')?.addEventListener('click', () => {
     const amt = parseFloat(input?.value);
+    const date = document.getElementById('cash-deposit-date').value;
     if (!amt || amt <= 0) {
       showToast('Enter a valid deposit amount.', 'error');
       return;
     }
-    window.AppData.cash += amt;
+    const entry = {
+      id: generateId(),
+      player: 'CASH DEPOSIT',
+      year: '', set: '', cardNumber: '', sport: '',
+      type: 'Cash Deposit',
+      grader: '', grade: '', condition: '',
+      purchasePrice: amt,
+      purchaseDate: date,
+      source: '', estimatedValue: 0,
+      status: 'Cash Deposit',
+      salePrice: 0, saleDate: '', platform: '',
+      frontImageUrl: '', backImageUrl: '', notes: '',
+    };
+    window.AppData.cards.push(entry);
     saveSessionData();
-    showToast(`${formatCurrency(amt)} added. Cash on hand: ${formatCurrency(window.AppData.cash)}`, 'success');
+    showToast(`${formatCurrency(amt)} cash deposit added.`, 'success');
     close();
+    render();
   });
 
   input?.focus();

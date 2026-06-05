@@ -32,7 +32,7 @@ function renderAll() {
 
 // ===== SUMMARY STRIP =====
 function renderSummaryStrip() {
-  const stats = getPortfolioStats(window.AppData.cards, window.AppData.cash);
+  const stats = getPortfolioStats(window.AppData.cards);
   setText('a-metric-cash', formatCurrency(stats.cash));
   setText('a-metric-cards', stats.totalCards);
   setText('a-metric-value', formatCurrency(stats.portfolioValue));
@@ -51,7 +51,7 @@ function setText(id, val) {
 
 // ===== SPORT DONUT =====
 function renderSportDonut() {
-  const cards = filterBySportToggle(window.AppData.cards);
+  const cards = filterBySportToggle(window.AppData.cards.filter(c => !isCashDeposit(c)));
   const sports = ['MLB', 'NBA', 'NFL', 'NHL', 'Other'];
   const counts = sports.map(s => cards.filter(c => c.sport === s).length);
   const total = counts.reduce((a, b) => a + b, 0);
@@ -137,7 +137,7 @@ function filterBySportToggle(cards) {
 
 // ===== P&L BY SPORT BAR =====
 function renderPLSportChart() {
-  const cards = window.AppData.cards;
+  const cards = window.AppData.cards.filter(c => !isCashDeposit(c));
   const sports = ['MLB', 'NBA', 'NFL', 'NHL', 'Other'];
 
   const plValues = sports.map(s => {
@@ -218,7 +218,7 @@ function renderPLSportChart() {
 
 // ===== P&L OVER TIME =====
 function renderPLTimeChart() {
-  const cards = window.AppData.cards;
+  const cards = window.AppData.cards.filter(c => !isCashDeposit(c));
 
   // Build transaction list
   const events = [];
@@ -310,7 +310,7 @@ function renderPLTimeChart() {
 
 // ===== TOP WINNERS / LOSERS =====
 function renderTopTables() {
-  const cards = window.AppData.cards;
+  const cards = window.AppData.cards.filter(c => !isCashDeposit(c));
   const sorted = cards.map(c => ({ ...c, pl: calculatePL(c), pct: c.purchasePrice > 0 ? (calculatePL(c) / c.purchasePrice) * 100 : 0 }))
     .sort((a, b) => b.pl - a.pl);
 

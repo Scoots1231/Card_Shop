@@ -12,29 +12,29 @@ const CSV_HEADERS = [
 const CASH_ID = '__CASH__';
 const SESSION_KEY = 'card_manager_data';
 
+function isCashDeposit(card) {
+  return card.type === 'Cash Deposit';
+}
+
 // Load from sessionStorage if available, otherwise start empty
 function loadSessionData() {
   try {
     const raw = sessionStorage.getItem(SESSION_KEY);
     if (raw) return JSON.parse(raw);
   } catch {}
-  return { cards: [], cash: 0 };
+  return { cards: [] };
 }
 
 function saveSessionData() {
   try {
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({
-      cards: window.AppData.cards,
-      cash: window.AppData.cash,
-    }));
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ cards: window.AppData.cards }));
   } catch {}
 }
 
 // In-memory store — initialised from sessionStorage
 const _session = loadSessionData();
 window.AppData = {
-  cards: _session.cards,
-  cash: _session.cash,
+  cards: _session.cards || [],
 };
 
 function generateId() {
@@ -92,24 +92,37 @@ function importCSV(file) {
 
         const headers = parseCSVLine(lines[0]).map(h => h.trim());
 
-        // Validate headers
         const requiredHeaders = ['id', 'player', 'purchasePrice', 'status'];
         const hasRequired = requiredHeaders.every(h => headers.includes(h));
         if (!hasRequired) throw new Error('Invalid CSV format');
 
         const cards = [];
-        let cash = 0;
 
         for (let i = 1; i < lines.length; i++) {
           if (!lines[i].trim()) continue;
           const values = parseCSVLine(lines[i]);
           const obj = {};
-          headers.forEach((h, idx) => {
-            obj[h] = values[idx] ?? '';
-          });
+          headers.forEach((h, idx) => { obj[h] = values[idx] ?? ''; });
 
+          // Legacy __CASH__ row — convert to a Cash Deposit entry
           if (obj.id === CASH_ID) {
-            cash = parseNumber(obj.purchasePrice);
+            const amount = parseNumber(obj.purchasePrice);
+            if (amount > 0) {
+              cards.push({
+                id: generateId(),
+                player: 'CASH DEPOSIT',
+                year: '', set: '', cardNumber: '', sport: '',
+                type: 'Cash Deposit',
+                grader: '', grade: '', condition: '',
+                purchasePrice: amount,
+                purchaseDate: new Date().toISOString().slice(0, 10),
+                source: '', estimatedValue: 0,
+                status: 'Cash Deposit',
+                salePrice: 0, saleDate: '', platform: '',
+                frontImageUrl: '', backImageUrl: '',
+                notes: 'Imported from legacy cash balance',
+              });
+            }
             continue;
           }
 
@@ -139,9 +152,8 @@ function importCSV(file) {
         }
 
         window.AppData.cards = cards;
-        window.AppData.cash = cash;
         saveSessionData();
-        resolve({ cards, cash });
+        resolve({ cards });
       } catch (err) {
         reject(err);
       }
@@ -151,23 +163,12 @@ function importCSV(file) {
   });
 }
 
-function exportCSV(cards, cash) {
+function exportCSV(cards) {
   const rows = [CSV_HEADERS.join(',')];
-
-  // Cash row
-  const cashRow = CSV_HEADERS.map(h => {
-    if (h === 'id') return CASH_ID;
-    if (h === 'purchasePrice') return String(cash);
-    return '';
-  });
-  rows.push(cashRow.join(','));
-
-  // Card rows
   for (const card of cards) {
     const row = CSV_HEADERS.map(h => escapeCSVField(card[h] ?? ''));
     rows.push(row.join(','));
   }
-
   const csv = rows.join('\n');
   const date = new Date().toISOString().slice(0, 10);
   const blob = new Blob([csv], { type: 'text/csv' });
@@ -182,25 +183,28 @@ function exportCSV(cards, cash) {
 }
 
 function calculatePL(card) {
+  if (isCashDeposit(card)) return 0;
   const cost = card.purchasePrice || 0;
-  if (card.status === 'Sold') {
-    return (card.salePrice || 0) - cost;
-  }
+  if (card.status === 'Sold') return (card.salePrice || 0) - cost;
   return (card.estimatedValue || 0) - cost;
 }
 
-function getPortfolioStats(cards, cash) {
-  const unsold = cards.filter(c => c.status !== 'Sold');
-  const sold = cards.filter(c => c.status === 'Sold');
+function getCashOnHand(cards) {
+  return cards.filter(isCashDeposit).reduce((sum, c) => sum + (c.purchasePrice || 0), 0);
+}
+
+function getPortfolioStats(cards) {
+  const realCards = cards.filter(c => !isCashDeposit(c));
+  const unsold = realCards.filter(c => c.status !== 'Sold');
+  const sold = realCards.filter(c => c.status === 'Sold');
 
   const totalCards = unsold.length;
   const portfolioValue = unsold.reduce((sum, c) => sum + (c.estimatedValue || 0), 0);
-
   const realizedPL = sold.reduce((sum, c) => sum + calculatePL(c), 0);
   const unrealizedPL = unsold.reduce((sum, c) => sum + calculatePL(c), 0);
   const totalPL = realizedPL + unrealizedPL;
-
-  const totalInvested = cards.reduce((sum, c) => sum + (c.purchasePrice || 0), 0);
+  const totalInvested = realCards.reduce((sum, c) => sum + (c.purchasePrice || 0), 0);
+  const cash = getCashOnHand(cards);
 
   return { totalCards, portfolioValue, totalPL, cash, realizedPL, unrealizedPL, totalInvested, soldCount: sold.length };
 }
@@ -223,12 +227,10 @@ function showToast(message, type = 'info') {
     container.className = 'toast-container';
     document.body.appendChild(container);
   }
-
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
   toast.textContent = message;
   container.appendChild(toast);
-
   setTimeout(() => {
     toast.style.opacity = '0';
     toast.style.transition = 'opacity 0.3s';
@@ -239,9 +241,7 @@ function showToast(message, type = 'info') {
 // Theme management
 function initTheme() {
   const saved = localStorage.getItem('card_manager_theme') || 'dark';
-  if (saved === 'light') {
-    document.documentElement.setAttribute('data-theme', 'light');
-  }
+  if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
 }
 
 function toggleTheme() {
@@ -260,30 +260,23 @@ function updateThemeIcon() {
   const btn = document.getElementById('theme-toggle');
   if (!btn) return;
   const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-  btn.innerHTML = isLight
-    ? '<i class="ti ti-moon"></i>'
-    : '<i class="ti ti-sun"></i>';
+  btn.innerHTML = isLight ? '<i class="ti ti-moon"></i>' : '<i class="ti ti-sun"></i>';
   btn.setAttribute('aria-label', isLight ? 'Switch to dark mode' : 'Switch to light mode');
 }
 
 // Navbar setup — shared across all pages
 function initNavbar(activePage) {
   initTheme();
-
   const nav = document.getElementById('main-nav');
   if (!nav) return;
 
-  // Mark active link
   nav.querySelectorAll('.nav-links a').forEach(a => {
     a.classList.toggle('active', a.dataset.page === activePage);
   });
 
   updateThemeIcon();
-
-  // Theme toggle
   document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
 
-  // Import CSV
   document.getElementById('import-btn')?.addEventListener('click', () => {
     document.getElementById('csv-file-input').click();
   });
@@ -301,17 +294,15 @@ function initNavbar(activePage) {
     e.target.value = '';
   });
 
-  // Export CSV
   document.getElementById('export-btn')?.addEventListener('click', () => {
     if (window.AppData.cards.length === 0) {
       showToast('No data to export.', 'warning');
       return;
     }
-    exportCSV(window.AppData.cards, window.AppData.cash);
+    exportCSV(window.AppData.cards);
     showToast('CSV exported.', 'success');
   });
 
-  // Settings modal
   document.getElementById('settings-btn')?.addEventListener('click', openSettingsModal);
 }
 
@@ -342,11 +333,9 @@ function openSettingsModal() {
       </div>
     </div>
   `;
-
   document.body.appendChild(overlay);
 
   const close = () => overlay.remove();
-  overlay.getElementById?.('settings-close')?.addEventListener('click', close);
   document.getElementById('settings-close')?.addEventListener('click', close);
   document.getElementById('settings-cancel')?.addEventListener('click', close);
   document.getElementById('settings-save')?.addEventListener('click', () => {
@@ -356,9 +345,6 @@ function openSettingsModal() {
     showToast('Settings saved.', 'success');
     close();
   });
-  overlay.addEventListener('click', e => {
-    if (e.target === overlay) close();
-  });
-
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
   document.getElementById('api-key-input')?.focus();
 }
