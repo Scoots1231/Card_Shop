@@ -48,6 +48,7 @@ function bindToolbar() {
   });
 
   document.getElementById('add-card-btn')?.addEventListener('click', () => openModal(null));
+  document.getElementById('add-cash-btn')?.addEventListener('click', openCashModal);
 }
 
 // ===== FILTERING & SORTING =====
@@ -163,7 +164,7 @@ function renderRow(card, rowNum) {
         <div class="action-cell" onclick="event.stopPropagation()">
           ${hasImages ? `<button class="btn-img" data-id="${card.id}" title="View images" aria-label="View card images"><i class="ti ti-camera"></i></button>` : ''}
           <button class="btn-edit" data-id="${card.id}" aria-label="Edit card"><i class="ti ti-pencil"></i></button>
-          <button class="btn-delete" data-id="${card.id}" aria-label="Delete card"><i class="ti ti-trash"></i></button>
+          <button class="btn-delete" data-id="${card.id}" aria-label="Delete card" style="color:var(--accent-red);border-color:var(--accent-red);padding:2px 7px;font-size:11px;font-weight:600;letter-spacing:0.04em;"><i class="ti ti-trash"></i> DELETE</button>
           <button class="btn-comps" data-id="${card.id}" aria-label="Check comps">COMPS</button>
         </div>
       </td>
@@ -636,6 +637,69 @@ async function callClaudeComps(prompt, apiKey) {
   const textBlocks = (data.content || []).filter(b => b.type === 'text');
   if (textBlocks.length === 0) throw new Error('No text response');
   return textBlocks.map(b => b.text).join('\n');
+}
+
+// ===== CASH DEPOSIT MODAL =====
+function openCashModal() {
+  const existing = document.getElementById('cash-modal-overlay');
+  if (existing) existing.remove();
+
+  const current = window.AppData.cash;
+  const overlay = document.createElement('div');
+  overlay.id = 'cash-modal-overlay';
+  overlay.className = 'modal-overlay centered';
+
+  overlay.innerHTML = `
+    <div class="modal modal-center" role="dialog" aria-modal="true" aria-labelledby="cash-modal-title">
+      <div class="modal-header">
+        <span class="modal-title" id="cash-modal-title">Add Cash Deposit</span>
+        <button class="modal-close" id="cash-modal-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label style="color:var(--text-secondary);font-size:11px;text-transform:uppercase;letter-spacing:.06em;">Current Cash on Hand</label>
+          <div style="font-family:var(--font-mono);font-size:22px;font-weight:500;margin:6px 0 16px;">${formatCurrency(current)}</div>
+        </div>
+        <div class="form-group">
+          <label for="cash-deposit-input">Deposit Amount <span style="color:var(--accent-red);">*</span></label>
+          <input type="number" id="cash-deposit-input" class="form-control mono" min="0.01" step="0.01" placeholder="0.00" autofocus>
+        </div>
+        <div id="cash-new-total" style="font-size:12px;color:var(--text-secondary);margin-top:4px;font-family:var(--font-mono);"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="cash-modal-cancel">Cancel</button>
+        <button class="btn btn-success" id="cash-modal-save"><i class="ti ti-plus"></i> Add Deposit</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const input = document.getElementById('cash-deposit-input');
+  const newTotalEl = document.getElementById('cash-new-total');
+
+  input?.addEventListener('input', () => {
+    const amt = parseFloat(input.value) || 0;
+    newTotalEl.textContent = amt > 0 ? `New total: ${formatCurrency(current + amt)}` : '';
+  });
+
+  const close = () => overlay.remove();
+  document.getElementById('cash-modal-close')?.addEventListener('click', close);
+  document.getElementById('cash-modal-cancel')?.addEventListener('click', close);
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+
+  document.getElementById('cash-modal-save')?.addEventListener('click', () => {
+    const amt = parseFloat(input?.value);
+    if (!amt || amt <= 0) {
+      showToast('Enter a valid deposit amount.', 'error');
+      return;
+    }
+    window.AppData.cash += amt;
+    showToast(`${formatCurrency(amt)} added. Cash on hand: ${formatCurrency(window.AppData.cash)}`, 'success');
+    close();
+  });
+
+  input?.focus();
 }
 
 // ===== LIGHTBOX =====
