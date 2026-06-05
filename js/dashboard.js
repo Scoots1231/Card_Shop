@@ -54,8 +54,8 @@ function renderPortfolioStrip() {
 
   const plEl = document.getElementById('metric-pl');
   if (plEl) {
-    plEl.textContent = formatPL(stats.totalPL);
-    plEl.className = 'metric-value mono ' + (stats.totalPL >= 0 ? 'text-green' : 'text-red');
+    plEl.textContent = formatPL(stats.realizedPL);
+    plEl.className = 'metric-value mono ' + (stats.realizedPL >= 0 ? 'text-green' : 'text-red');
   }
 }
 
