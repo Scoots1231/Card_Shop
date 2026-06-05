@@ -140,16 +140,20 @@ function renderTable() {
 function renderRow(card, rowNum) {
   // ---- Cash Deposit row ----
   if (isCashDeposit(card)) {
+    const isPositive = (card.purchasePrice || 0) >= 0;
+    const amtColor = isPositive ? 'var(--accent-green)' : 'var(--accent-red)';
+    const amtText = isPositive ? `+${formatCurrency(card.purchasePrice)}` : formatCurrency(card.purchasePrice);
+    const badgeClass = isPositive ? 'badge-green' : 'badge-gray';
     return `
-      <tr data-id="${card.id}" data-row="${rowNum}" style="opacity:0.75;" title="Cash Deposit">
+      <tr data-id="${card.id}" data-row="${rowNum}" style="opacity:0.8;">
         <td>${rowNum}</td>
-        <td class="text-col" colspan="8" style="color:var(--accent-green);font-weight:600;letter-spacing:0.06em;">
-          <i class="ti ti-cash" style="margin-right:6px;"></i>CASH DEPOSIT
+        <td class="text-col" colspan="8" style="color:${amtColor};font-weight:600;letter-spacing:0.04em;font-size:11px;">
+          <i class="ti ti-cash" style="margin-right:6px;"></i>${card.player}
         </td>
-        <td style="color:var(--accent-green);font-weight:600;">${formatCurrency(card.purchasePrice)}</td>
+        <td style="color:${amtColor};font-weight:600;">${amtText}</td>
         <td>${card.purchaseDate || ''}</td>
         <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-        <td><span class="badge badge-green">CASH</span></td>
+        <td><span class="badge ${badgeClass}">CASH</span></td>
         <td>
           <div class="action-cell" onclick="event.stopPropagation()">
             <button class="btn-delete" data-id="${card.id}" aria-label="Delete deposit"
@@ -546,16 +550,68 @@ function saveCard(existingId) {
   };
 
   if (existingId) {
+    const prev = window.AppData.cards.find(c => c.id === existingId);
     const idx = window.AppData.cards.findIndex(c => c.id === existingId);
     if (idx >= 0) window.AppData.cards[idx] = cardData;
+
+    // If purchase price changed, adjust cash by the difference (deduct more or refund)
+    const priceDiff = (cardData.purchasePrice || 0) - (prev?.purchasePrice || 0);
+    if (priceDiff !== 0) {
+      addCashEntry(
+        priceDiff > 0
+          ? `PURCHASE ADJUSTMENT — ${cardData.player}`
+          : `PURCHASE REFUND — ${cardData.player}`,
+        -priceDiff,
+        cardData.purchaseDate
+      );
+    }
+
+    // If card newly marked Sold (wasn't sold before), add sale price to cash
+    if (cardData.status === 'Sold' && prev?.status !== 'Sold') {
+      addCashEntry(`SALE — ${cardData.player}`, cardData.salePrice || 0, cardData.saleDate || cardData.purchaseDate);
+    }
+    // If card un-sold (was sold, now in storage), reverse the sale
+    if (cardData.status !== 'Sold' && prev?.status === 'Sold') {
+      addCashEntry(`SALE REVERSAL — ${cardData.player}`, -(prev?.salePrice || 0), cardData.purchaseDate);
+    }
+    // If card was already sold and sale price changed, adjust the difference
+    if (cardData.status === 'Sold' && prev?.status === 'Sold') {
+      const saleDiff = (cardData.salePrice || 0) - (prev?.salePrice || 0);
+      if (saleDiff !== 0) {
+        addCashEntry(`SALE ADJUSTMENT — ${cardData.player}`, saleDiff, cardData.saleDate || cardData.purchaseDate);
+      }
+    }
   } else {
     window.AppData.cards.push(cardData);
+    // New card purchased — deduct purchase price from cash
+    addCashEntry(`PURCHASE — ${cardData.player}`, -(cardData.purchasePrice || 0), cardData.purchaseDate);
+    // If added directly as Sold — also add the sale proceeds
+    if (cardData.status === 'Sold' && cardData.salePrice) {
+      addCashEntry(`SALE — ${cardData.player}`, cardData.salePrice, cardData.saleDate || cardData.purchaseDate);
+    }
   }
 
   saveSessionData();
   document.getElementById('card-modal-overlay')?.remove();
   showToast(existingId ? 'Card updated.' : 'Card added.', 'success');
   render();
+}
+
+function addCashEntry(label, amount, date) {
+  if (amount === 0) return;
+  window.AppData.cards.push({
+    id: generateId(),
+    player: label,
+    year: '', set: '', cardNumber: '', sport: '',
+    type: 'Cash Deposit',
+    grader: '', grade: '', condition: '',
+    purchasePrice: amount,
+    purchaseDate: date || new Date().toISOString().slice(0, 10),
+    source: '', estimatedValue: 0,
+    status: 'Cash Deposit',
+    salePrice: 0, saleDate: '', platform: '',
+    frontImageUrl: '', backImageUrl: '', notes: '',
+  });
 }
 
 // ===== COMPS PANEL =====
