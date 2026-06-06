@@ -366,8 +366,8 @@ function openSettingsModal() {
   document.getElementById('slack-test-btn')?.addEventListener('click', async () => {
     const webhook = document.getElementById('slack-webhook-input').value.trim();
     if (!webhook) { showToast('Enter a webhook URL first.', 'warning'); return; }
-    const ok = await sendSlackNotification('👋 Card Manager connected successfully!', webhook);
-    showToast(ok ? 'Test message sent to Slack!' : 'Failed to send. Check your webhook URL.', ok ? 'success' : 'error');
+    await sendSlackNotification('👋 Card Manager connected successfully!', webhook);
+    showToast('Test message sent — check your Slack channel.', 'success');
   });
   overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
   document.getElementById('slack-webhook-input')?.focus();
@@ -379,6 +379,7 @@ async function sendSlackNotification(text, webhookOverride) {
   try {
     await fetch(url, {
       method: 'POST',
+      mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text }),
     });
