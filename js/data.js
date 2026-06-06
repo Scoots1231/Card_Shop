@@ -304,6 +304,21 @@ function initNavbar(activePage) {
   });
 
   document.getElementById('settings-btn')?.addEventListener('click', openSettingsModal);
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', e => {
+    if (!e.ctrlKey && !e.metaKey) return;
+    if (e.key === 'i' || e.key === 'I') {
+      e.preventDefault();
+      document.getElementById('csv-file-input')?.click();
+    }
+    if (e.key === 'e' || e.key === 'E') {
+      e.preventDefault();
+      if (window.AppData.cards.length === 0) { showToast('No data to export.', 'warning'); return; }
+      exportCSV(window.AppData.cards);
+      showToast('CSV exported.', 'success');
+    }
+  });
 }
 
 function openSettingsModal() {

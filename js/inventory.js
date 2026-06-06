@@ -18,6 +18,14 @@ document.addEventListener('DOMContentLoaded', () => {
   render();
 
   document.addEventListener('data-loaded', render);
+
+  // Ctrl+N — new card
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'n' || e.key === 'N')) {
+      e.preventDefault();
+      openModal(null);
+    }
+  });
 });
 
 // ===== TOOLBAR =====
