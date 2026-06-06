@@ -19,9 +19,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.addEventListener('data-loaded', render);
 
-  // Ctrl+N — new card
+  // Ctrl+X — new card
   document.addEventListener('keydown', e => {
-    if ((e.ctrlKey || e.metaKey) && (e.key === 'n' || e.key === 'N')) {
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'x' || e.key === 'X')) {
       e.preventDefault();
       openModal(null);
     }
