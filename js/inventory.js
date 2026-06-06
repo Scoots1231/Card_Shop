@@ -606,9 +606,11 @@ function saveCard(existingId) {
     window.AppData.cards.push(cardData);
     // New card purchased — deduct purchase price from cash
     addCashEntry(`PURCHASE — ${cardData.player}`, -(cardData.purchasePrice || 0), cardData.purchaseDate);
+    sendSlackNotification(`🃏 *Card Added*\n*${cardData.player}* — ${cardData.year} ${cardData.set} ${conditionValue(cardData)}\nPaid: ${formatCurrency(cardData.purchasePrice)}`);
     // If added directly as Sold — also add the sale proceeds
     if (cardData.status === 'Sold' && cardData.salePrice) {
       addCashEntry(`SALE — ${cardData.player}`, cardData.salePrice, cardData.saleDate || cardData.purchaseDate);
+      sendSlackNotification(`💰 *Card Sold*\n*${cardData.player}* — ${cardData.year} ${cardData.set}\nSold for: ${formatCurrency(cardData.salePrice)} | P&L: ${formatPL(cardData.salePrice - cardData.purchasePrice)}`);
     }
   }
 
@@ -728,6 +730,9 @@ function openSoldModal(card) {
     // Add sale proceeds to cash
     addCashEntry(`SALE — ${card.player}`, salePrice, saleDate);
 
+    const pl = salePrice - (card.purchasePrice || 0);
+    sendSlackNotification(`💰 *Card Sold*\n*${card.player}* — ${card.year} ${card.set} ${conditionValue(card)}\nSold for: ${formatCurrency(salePrice)} on ${platform || 'N/A'}\nP&L: ${formatPL(pl)}`);
+
     saveSessionData();
     showToast(`${card.player} marked as sold for ${formatCurrency(salePrice)}.`, 'success');
     close();
@@ -834,6 +839,7 @@ function openCashModal() {
     };
     window.AppData.cards.push(entry);
     saveSessionData();
+    sendSlackNotification(`💵 *Cash Deposit*\nAmount: ${formatCurrency(amt)}\nNew balance: ${formatCurrency(getCashOnHand(window.AppData.cards))}`);
     showToast(`${formatCurrency(amt)} cash deposit added.`, 'success');
     close();
     render();

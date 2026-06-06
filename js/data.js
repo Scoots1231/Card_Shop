@@ -336,10 +336,13 @@ function openSettingsModal() {
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label for="api-key-input">Anthropic API Key</label>
-          <input type="password" id="api-key-input" class="form-control" placeholder="sk-ant-..." autocomplete="off"
-            value="${sessionStorage.getItem('anthropic_api_key') || ''}">
-          <p class="settings-note">Your API key is only stored for this browser session and is never saved to disk or exported in your CSV.</p>
+          <label for="slack-webhook-input">Slack Webhook URL</label>
+          <input type="password" id="slack-webhook-input" class="form-control" placeholder="https://hooks.slack.com/services/..." autocomplete="off"
+            value="${sessionStorage.getItem('slack_webhook_url') || ''}">
+          <p class="settings-note">Notifications will be posted to your Slack channel when cards are added, sold, or cash is deposited. Stored for this session only.</p>
+        </div>
+        <div class="form-group" style="margin-top:8px;">
+          <button class="btn btn-sm" id="slack-test-btn"><i class="ti ti-brand-slack"></i> Send Test Message</button>
         </div>
       </div>
       <div class="modal-footer">
@@ -354,12 +357,33 @@ function openSettingsModal() {
   document.getElementById('settings-close')?.addEventListener('click', close);
   document.getElementById('settings-cancel')?.addEventListener('click', close);
   document.getElementById('settings-save')?.addEventListener('click', () => {
-    const key = document.getElementById('api-key-input').value.trim();
-    if (key) sessionStorage.setItem('anthropic_api_key', key);
-    else sessionStorage.removeItem('anthropic_api_key');
+    const webhook = document.getElementById('slack-webhook-input').value.trim();
+    if (webhook) sessionStorage.setItem('slack_webhook_url', webhook);
+    else sessionStorage.removeItem('slack_webhook_url');
     showToast('Settings saved.', 'success');
     close();
   });
+  document.getElementById('slack-test-btn')?.addEventListener('click', async () => {
+    const webhook = document.getElementById('slack-webhook-input').value.trim();
+    if (!webhook) { showToast('Enter a webhook URL first.', 'warning'); return; }
+    const ok = await sendSlackNotification('👋 Card Manager connected successfully!', webhook);
+    showToast(ok ? 'Test message sent to Slack!' : 'Failed to send. Check your webhook URL.', ok ? 'success' : 'error');
+  });
   overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
-  document.getElementById('api-key-input')?.focus();
+  document.getElementById('slack-webhook-input')?.focus();
+}
+
+async function sendSlackNotification(text, webhookOverride) {
+  const url = webhookOverride || sessionStorage.getItem('slack_webhook_url');
+  if (!url) return false;
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }
