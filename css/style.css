@@ -634,6 +634,12 @@ tbody td.text-col {
   border: 1px solid rgba(136, 136, 136, 0.3);
 }
 
+.badge-amber {
+  background: rgba(199, 123, 43, 0.15);
+  color: var(--accent-amber);
+  border: 1px solid rgba(199, 123, 43, 0.3);
+}
+
 .badge-green {
   background: rgba(0, 208, 132, 0.15);
   color: var(--accent-green);

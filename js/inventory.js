@@ -180,7 +180,9 @@ function renderRow(card, rowNum) {
   const plText = formatPL(pl);
   const statusBadge = card.status === 'Sold'
     ? '<span class="badge badge-gray">SOLD</span>'
-    : '<span class="badge badge-blue">IN STORAGE</span>';
+    : card.status === 'Posted$'
+      ? '<span class="badge badge-amber">POSTED$</span>'
+      : '<span class="badge badge-blue">IN STORAGE</span>';
   const hasImages = card.frontImageUrl || card.backImageUrl;
   const condDisplay = conditionValue(card);
 
@@ -445,6 +447,7 @@ function openModal(card) {
             <label>Status <span class="required">*</span></label>
             <div class="radio-group">
               <label><input type="radio" name="f-status" value="In Storage" ${(!card||card.status==='In Storage')?'checked':''}> In Storage</label>
+              <label><input type="radio" name="f-status" value="Posted$" ${card?.status==='Posted$'?'checked':''}> Posted$</label>
               <label><input type="radio" name="f-status" value="Sold" ${card?.status==='Sold'?'checked':''}> Sold</label>
             </div>
           </div>
