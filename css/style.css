@@ -601,6 +601,15 @@ tbody tr:hover {
   background: rgba(74, 158, 255, 0.08);
 }
 
+tbody tr[data-status="Posted$"],
+tbody tr[data-status="Posted$"]:nth-child(even) {
+  background: rgba(45, 106, 79, 0.12);
+}
+
+tbody tr[data-status="Posted$"]:hover {
+  background: rgba(45, 106, 79, 0.2);
+}
+
 tbody td {
   padding: 6px 8px;
   white-space: nowrap;

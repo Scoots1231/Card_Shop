@@ -187,7 +187,7 @@ function renderRow(card, rowNum) {
   const condDisplay = conditionValue(card);
 
   return `
-    <tr data-id="${card.id}" data-row="${rowNum}">
+    <tr data-id="${card.id}" data-row="${rowNum}" data-status="${card.status}">
       <td>${rowNum}</td>
       <td class="text-col">${card.player || ''}</td>
       <td>${card.year || ''}</td>
