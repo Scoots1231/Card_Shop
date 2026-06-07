@@ -216,6 +216,7 @@ function renderRow(card, rowNum) {
             <i class="ti ti-trash"></i> DELETE
           </button>
           <button class="btn-comps" data-id="${card.id}" aria-label="Check comps">COMPS</button>
+          <button class="btn-news" data-id="${card.id}" aria-label="Search player news">NEWS</button>
         </div>
       </td>
     </tr>
@@ -276,6 +277,14 @@ function attachRowHandlers(tbody, cards) {
     btn.addEventListener('click', e => {
       e.stopPropagation();
       openCompsPanel(btn.dataset.id);
+    });
+  });
+
+  // News buttons
+  tbody.querySelectorAll('.btn-news').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      openNewsSearch(btn.dataset.id);
     });
   });
 }
@@ -755,6 +764,15 @@ function openCompsPanel(cardId) {
 
 function closeCompsPanel() {
   // No-op — comps now opens a new tab, nothing inline to close
+}
+
+// ===== NEWS — Google News search for player =====
+function openNewsSearch(cardId) {
+  const card = window.AppData.cards.find(c => c.id === cardId);
+  if (!card || !card.player) return;
+  const query = `${card.player} baseball card sports news`;
+  const url = `https://www.google.com/search?q=${encodeURIComponent(card.player + ' sports news')}&tbm=nws`;
+  window.open(url, '_blank', 'noopener,noreferrer');
 }
 
 // ===== CASH DEPOSIT MODAL =====
