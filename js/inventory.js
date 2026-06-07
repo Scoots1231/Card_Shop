@@ -275,12 +275,7 @@ function attachRowHandlers(tbody, cards) {
   tbody.querySelectorAll('.btn-comps').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
-      const id = btn.dataset.id;
-      if (state.openCompsId === id) {
-        closeCompsPanel();
-      } else {
-        openCompsPanel(id);
-      }
+      openCompsPanel(btn.dataset.id);
     });
   });
 }
