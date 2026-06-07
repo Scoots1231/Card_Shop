@@ -1,8 +1,25 @@
 /* ===== IMPORTS ===== */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&family=Playfair+Display:wght@600&display=swap');
 
 /* ===== CSS VARIABLES ===== */
 :root {
+  --bg-primary: #F7F3EC;
+  --bg-secondary: #FDFAF5;
+  --bg-tertiary: #EDE8DF;
+  --text-primary: #1A1209;
+  --text-secondary: #7A6A55;
+  --accent-green: #2D6A4F;
+  --accent-red: #C1121F;
+  --accent-amber: #C77B2B;
+  --accent-blue: #1D3557;
+  --accent-purple: #6B3FA0;
+  --border: #D4C9B8;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --font-sans: 'Inter', sans-serif;
+  --nav-height: 48px;
+}
+
+[data-theme="dark"] {
   --bg-primary: #0a0a0a;
   --bg-secondary: #111111;
   --bg-tertiary: #1a1a1a;
@@ -12,24 +29,7 @@
   --accent-red: #ff4d4d;
   --accent-amber: #f5a623;
   --accent-blue: #4a9eff;
-  --accent-purple: #cc66ff;
   --border: #2a2a2a;
-  --font-mono: 'IBM Plex Mono', monospace;
-  --font-sans: 'Inter', sans-serif;
-  --nav-height: 48px;
-}
-
-[data-theme="light"] {
-  --bg-primary: #f5f5f5;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #ebebeb;
-  --text-primary: #0a0a0a;
-  --text-secondary: #555555;
-  --accent-green: #007a4d;
-  --accent-red: #cc0000;
-  --accent-amber: #b87200;
-  --accent-blue: #185fa5;
-  --border: #cccccc;
 }
 
 /* ===== RESET & BASE ===== */

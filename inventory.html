@@ -42,15 +42,21 @@
       <h1 class="section-header" style="border:none;margin:0;padding:0;">Inventory</h1>
     </div>
 
-    <!-- Toolbar -->
-    <div class="toolbar" role="search" aria-label="Inventory filters">
+    <!-- Player search bar -->
+    <div style="margin-bottom:12px;position:relative;">
+      <i class="ti ti-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-secondary);font-size:16px;pointer-events:none;"></i>
       <input
         type="text"
         id="search-input"
-        placeholder="Search player..."
+        placeholder="Search player name..."
         aria-label="Search by player name"
         autocomplete="off"
+        style="width:100%;padding:10px 12px 10px 38px;font-size:15px;border:2px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);border-radius:2px;outline:none;"
       >
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar" role="search" aria-label="Inventory filters">
       <select id="sport-filter" aria-label="Filter by sport">
         <option value="All">All Sports</option>
         <option value="MLB">MLB</option>

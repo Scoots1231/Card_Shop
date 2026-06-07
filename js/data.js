@@ -240,18 +240,19 @@ function showToast(message, type = 'info') {
 
 // Theme management
 function initTheme() {
-  const saved = localStorage.getItem('card_manager_theme') || 'dark';
-  if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
+  const saved = localStorage.getItem('card_manager_theme') || 'cream';
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  else document.documentElement.removeAttribute('data-theme');
 }
 
 function toggleTheme() {
-  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-  if (isLight) {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if (isDark) {
     document.documentElement.removeAttribute('data-theme');
-    localStorage.setItem('card_manager_theme', 'dark');
+    localStorage.setItem('card_manager_theme', 'cream');
   } else {
-    document.documentElement.setAttribute('data-theme', 'light');
-    localStorage.setItem('card_manager_theme', 'light');
+    document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.setItem('card_manager_theme', 'dark');
   }
   updateThemeIcon();
 }
@@ -259,9 +260,9 @@ function toggleTheme() {
 function updateThemeIcon() {
   const btn = document.getElementById('theme-toggle');
   if (!btn) return;
-  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-  btn.innerHTML = isLight ? '<i class="ti ti-moon"></i>' : '<i class="ti ti-sun"></i>';
-  btn.setAttribute('aria-label', isLight ? 'Switch to dark mode' : 'Switch to light mode');
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  btn.innerHTML = isDark ? '<i class="ti ti-sun"></i>' : '<i class="ti ti-moon"></i>';
+  btn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
 }
 
 // Navbar setup — shared across all pages
