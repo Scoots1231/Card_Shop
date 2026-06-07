@@ -310,7 +310,7 @@ function renderPLTimeChart() {
 
 // ===== TOP WINNERS / LOSERS =====
 function renderTopTables() {
-  const cards = window.AppData.cards.filter(c => !isCashDeposit(c));
+  const cards = window.AppData.cards.filter(c => !isCashDeposit(c) && c.status === 'Sold');
   const sorted = cards.map(c => ({ ...c, pl: calculatePL(c), pct: c.purchasePrice > 0 ? (calculatePL(c) / c.purchasePrice) * 100 : 0 }))
     .sort((a, b) => b.pl - a.pl);
 
