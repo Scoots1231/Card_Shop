@@ -9,7 +9,6 @@ let state = {
   sortField: 'purchaseDate',
   sortDir: 'desc',
   page: 1,
-  openCompsId: null,
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -154,11 +153,6 @@ function renderStatsBar() {
   setText('stat-sold', sold.length);
   setText('stat-invested', formatCurrency(totalInvested));
   setText('stat-value', formatCurrency(currentValue));
-}
-
-function setText(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = val;
 }
 
 function renderTable() {
@@ -617,7 +611,6 @@ function saveCard(existingId) {
   };
 
   if (existingId) {
-    const prev = window.AppData.cards.find(c => c.id === existingId);
     const idx = window.AppData.cards.findIndex(c => c.id === existingId);
     if (idx >= 0) window.AppData.cards[idx] = cardData;
 
@@ -633,23 +626,6 @@ function saveCard(existingId) {
   document.getElementById('card-modal-overlay')?.remove();
   showToast(existingId ? 'Card updated.' : 'Card added.', 'success');
   render();
-}
-
-function addCashEntry(label, amount, date) {
-  if (amount === 0) return;
-  window.AppData.cards.push({
-    id: generateId(),
-    player: label,
-    year: '', set: '', cardNumber: '', sport: '',
-    type: 'Cash Deposit',
-    grader: '', grade: '', condition: '',
-    purchasePrice: amount,
-    purchaseDate: date || new Date().toISOString().slice(0, 10),
-    source: '', estimatedValue: 0,
-    status: 'Cash Deposit',
-    salePrice: 0, saleDate: '', platform: '',
-    frontImageUrl: '', backImageUrl: '', notes: '',
-  });
 }
 
 // ===== SOLD MODAL =====
@@ -770,15 +746,10 @@ function openCompsPanel(cardId) {
   window.open(ebayUrl, '_blank', 'noopener,noreferrer');
 }
 
-function closeCompsPanel() {
-  // No-op — comps now opens a new tab, nothing inline to close
-}
-
 // ===== NEWS — Google News search for player =====
 function openNewsSearch(cardId) {
   const card = window.AppData.cards.find(c => c.id === cardId);
   if (!card || !card.player) return;
-  const query = `${card.player} baseball card sports news`;
   const url = `https://www.google.com/search?q=${encodeURIComponent(card.player + ' sports news')}&tbm=nws`;
   window.open(url, '_blank', 'noopener,noreferrer');
 }

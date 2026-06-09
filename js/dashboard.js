@@ -28,7 +28,6 @@ async function initTicker() {
 }
 
 async function fetchTickerScores() {
-  const sportLabels = { MLB: 'MLB', NBA: 'NBA', NFL: 'NFL', NHL: 'NHL' };
   const items = [];
 
   await Promise.allSettled(
@@ -123,14 +122,6 @@ function renderPortfolioStrip() {
 }
 
 // ===== EXPOSURE BREAKDOWN =====
-const SPORT_COLORS = {
-  MLB: '#4a9eff',
-  NBA: '#f5a623',
-  NFL: '#00d084',
-  NHL: '#cc66ff',
-  Other: '#888888',
-};
-
 function renderExposure() {
   const container = document.getElementById('exposure-rows');
   const totalEl = document.getElementById('exposure-total');

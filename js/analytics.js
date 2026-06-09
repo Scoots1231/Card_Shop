@@ -7,14 +7,6 @@ let plTimeChart = null;
 let sportFilter = 'all'; // 'all' | 'storage' | 'sold'
 let plMode = 'combined'; // 'realized' | 'unrealized' | 'combined'
 
-const SPORT_COLORS = {
-  MLB: '#4a9eff',
-  NBA: '#f5a623',
-  NFL: '#00d084',
-  NHL: '#cc66ff',
-  Other: '#888888',
-};
-
 document.addEventListener('DOMContentLoaded', () => {
   initNavbar('analytics');
   renderAll();
@@ -42,11 +34,6 @@ function renderSummaryStrip() {
     plEl.textContent = formatPL(stats.totalPL);
     plEl.className = 'metric-value mono ' + (stats.totalPL >= 0 ? 'text-green' : 'text-red');
   }
-}
-
-function setText(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = val;
 }
 
 // ===== SPORT DONUT =====
@@ -199,16 +186,12 @@ function renderPLSportChart() {
         const { ctx: c, data } = chart;
         chart.getDatasetMeta(0).data.forEach((bar, i) => {
           const val = data.datasets[0].data[i];
-          const label = formatCurrency(val);
           c.save();
-          c.fillStyle = val >= 0
-            ? (getComputedStyle(document.documentElement).getPropertyValue('--accent-green').trim() || '#00d084')
-            : (getComputedStyle(document.documentElement).getPropertyValue('--accent-red').trim() || '#ff4d4d');
+          c.fillStyle = val >= 0 ? accentGreen : accentRed;
           c.font = '11px IBM Plex Mono, monospace';
           c.textBaseline = 'middle';
           c.textAlign = val >= 0 ? 'left' : 'right';
-          const x = val >= 0 ? bar.x + 4 : bar.x - 4;
-          c.fillText(label, x, bar.y);
+          c.fillText(formatCurrency(val), val >= 0 ? bar.x + 4 : bar.x - 4, bar.y);
           c.restore();
         });
       },

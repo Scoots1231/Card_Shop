@@ -389,3 +389,16 @@ async function sendSlackNotification(text, webhookOverride) {
     return false;
   }
 }
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+const SPORT_COLORS = {
+  MLB: '#4a9eff',
+  NBA: '#f5a623',
+  NFL: '#00d084',
+  NHL: '#cc66ff',
+  Other: '#888888',
+};

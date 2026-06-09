@@ -706,11 +706,6 @@ tbody td.text-col {
   color: #fff;
 }
 
-.camera-icon {
-  color: var(--accent-blue);
-  cursor: pointer;
-}
-
 .btn-img-empty {
   opacity: 0.2;
   cursor: default;
