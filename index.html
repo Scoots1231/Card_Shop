@@ -349,27 +349,29 @@
         </div>
       </div>
 
-      <!-- BOTTOM: news -->
-      <section class="dash-news" aria-label="Sports news headlines">
-        <div class="dash-news-header">
-          <span class="panel-title">Sports News</span>
-          <span class="text-muted" style="font-size:10px;font-family:var(--font-mono);">AUTO-REFRESH 5m</span>
-        </div>
-        <div id="news-list" aria-live="polite">
-          <p style="padding:20px;color:var(--text-secondary);font-size:13px;grid-column:1/-1;">Loading news...</p>
-        </div>
-      </section>
+      <!-- BOTTOM: news + youtube stacked flush -->
+      <div style="display:flex;flex-direction:column;">
+        <section class="dash-news" aria-label="Sports news headlines">
+          <div class="dash-news-header">
+            <span class="panel-title">Sports News</span>
+            <span class="text-muted" style="font-size:10px;font-family:var(--font-mono);">AUTO-REFRESH 5m</span>
+          </div>
+          <div id="news-list" aria-live="polite">
+            <p style="padding:20px;color:var(--text-secondary);font-size:13px;grid-column:1/-1;">Loading news...</p>
+          </div>
+        </section>
 
-      <!-- YOUTUBE LATEST VIDEOS -->
-      <section class="dash-yt" aria-label="YouTube latest videos">
-        <div class="dash-yt-header">
-          <span class="panel-title">YouTube</span>
-          <span class="text-muted" style="font-size:10px;font-family:var(--font-mono);">LATEST VIDEOS</span>
-        </div>
-        <div id="yt-sidebar" aria-live="polite">
-          <p style="padding:20px;color:var(--text-secondary);font-size:13px;grid-column:1/-1;">Loading&hellip;</p>
-        </div>
-      </section>
+        <!-- YOUTUBE LATEST VIDEOS -->
+        <section class="dash-yt" aria-label="YouTube latest videos">
+          <div class="dash-yt-header">
+            <span class="panel-title">YouTube</span>
+            <span class="text-muted" style="font-size:10px;font-family:var(--font-mono);">LATEST VIDEOS</span>
+          </div>
+          <div id="yt-sidebar" aria-live="polite">
+            <p style="padding:20px;color:var(--text-secondary);font-size:13px;grid-column:1/-1;">Loading&hellip;</p>
+          </div>
+        </section>
+      </div>
 
     </main>
 

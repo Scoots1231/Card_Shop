@@ -233,35 +233,7 @@ async function initYouTubeSidebar() {
   const container = document.getElementById('yt-sidebar');
   if (!container) return;
 
-  const results = await Promise.allSettled(
-    YT_CHANNELS.map(async ch => {
-      const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${ch.id}`;
-      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(feedUrl)}`;
-
-      const res = await fetch(proxyUrl);
-      if (!res.ok) throw new Error('fetch failed');
-      const json = await res.json();
-      if (!json.contents) throw new Error('no contents');
-
-      const doc = new DOMParser().parseFromString(json.contents, 'text/xml');
-      const entry = doc.querySelector('entry');
-      if (!entry) throw new Error('no entries');
-
-      const entryId = entry.querySelector('id')?.textContent || '';
-      const videoId = entryId.replace('yt:video:', '');
-      const title = entry.querySelector('title')?.textContent || '';
-      const link = entry.querySelector('link')?.getAttribute('href') || `https://www.youtube.com/watch?v=${videoId}`;
-      const published = entry.querySelector('published')?.textContent || '';
-
-      return {
-        name: ch.name,
-        title,
-        link,
-        thumb: videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : '',
-        date: published ? new Date(published) : null,
-      };
-    })
-  );
+  const results = await Promise.allSettled(YT_CHANNELS.map(ch => fetchYTChannel(ch)));
 
   container.innerHTML = results.map((r, i) => {
     if (r.status !== 'fulfilled') {
@@ -285,4 +257,45 @@ async function initYouTubeSidebar() {
         </a>
       </div>`;
   }).join('');
+}
+
+async function fetchYTChannel(ch) {
+  const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${ch.id}`;
+  const proxies = [
+    async () => {
+      const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(feedUrl)}`);
+      if (!r.ok) throw new Error();
+      const j = await r.json();
+      return j.contents;
+    },
+    async () => {
+      const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(feedUrl)}`);
+      if (!r.ok) throw new Error();
+      return r.text();
+    },
+  ];
+
+  let xml;
+  for (const proxy of proxies) {
+    try { xml = await proxy(); break; } catch {}
+  }
+  if (!xml) throw new Error('all proxies failed');
+
+  const doc = new DOMParser().parseFromString(xml, 'text/xml');
+  const entry = doc.querySelector('entry');
+  if (!entry) throw new Error('no entries');
+
+  const entryId = entry.querySelector('id')?.textContent || '';
+  const videoId = entryId.replace('yt:video:', '');
+  const title = entry.querySelector('title')?.textContent || '';
+  const link = entry.querySelector('link')?.getAttribute('href') || `https://www.youtube.com/watch?v=${videoId}`;
+  const published = entry.querySelector('published')?.textContent || '';
+
+  return {
+    name: ch.name,
+    title,
+    link,
+    thumb: videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : '',
+    date: published ? new Date(published) : null,
+  };
 }
