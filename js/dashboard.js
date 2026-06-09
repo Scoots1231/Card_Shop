@@ -259,43 +259,29 @@ async function initYouTubeSidebar() {
   }).join('');
 }
 
+const INVIDIOUS_INSTANCES = [
+  'https://inv.riverside.rocks',
+  'https://invidious.fdn.fr',
+  'https://yt.cdaut.de',
+];
+
 async function fetchYTChannel(ch) {
-  const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${ch.id}`;
-  const proxies = [
-    async () => {
-      const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(feedUrl)}`);
-      if (!r.ok) throw new Error();
-      const j = await r.json();
-      return j.contents;
-    },
-    async () => {
-      const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(feedUrl)}`);
-      if (!r.ok) throw new Error();
-      return r.text();
-    },
-  ];
-
-  let xml;
-  for (const proxy of proxies) {
-    try { xml = await proxy(); break; } catch {}
+  // Try each Invidious instance — public CORS-enabled JSON API, no proxy needed
+  for (const host of INVIDIOUS_INSTANCES) {
+    try {
+      const r = await fetch(`${host}/api/v1/channels/${ch.id}/videos?page=1&sort_by=newest`, { signal: AbortSignal.timeout(6000) });
+      if (!r.ok) continue;
+      const data = await r.json();
+      const video = data.videos?.[0];
+      if (!video?.videoId) continue;
+      return {
+        name: ch.name,
+        title: video.title || '',
+        link: `https://www.youtube.com/watch?v=${video.videoId}`,
+        thumb: `https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`,
+        date: video.published ? new Date(video.published * 1000) : null,
+      };
+    } catch {}
   }
-  if (!xml) throw new Error('all proxies failed');
-
-  const doc = new DOMParser().parseFromString(xml, 'text/xml');
-  const entry = doc.querySelector('entry');
-  if (!entry) throw new Error('no entries');
-
-  const entryId = entry.querySelector('id')?.textContent || '';
-  const videoId = entryId.replace('yt:video:', '');
-  const title = entry.querySelector('title')?.textContent || '';
-  const link = entry.querySelector('link')?.getAttribute('href') || `https://www.youtube.com/watch?v=${videoId}`;
-  const published = entry.querySelector('published')?.textContent || '';
-
-  return {
-    name: ch.name,
-    title,
-    link,
-    thumb: videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : '',
-    date: published ? new Date(published) : null,
-  };
+  throw new Error('all instances failed');
 }
