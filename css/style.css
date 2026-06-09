@@ -456,8 +456,9 @@ input:focus, select:focus, textarea:focus {
 
 /* ===== NEWS ITEMS ===== */
 .news-item {
-  padding: 10px 16px;
+  padding: 14px 18px;
   border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
 }
 
 .news-item:last-child {
@@ -465,11 +466,11 @@ input:focus, select:focus, textarea:focus {
 }
 
 .news-item a {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-primary);
   text-decoration: none;
   display: block;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .news-item a:hover {
