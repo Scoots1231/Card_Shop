@@ -473,12 +473,13 @@ function openModal(card) {
           <p class="form-section-title">Images &amp; Notes</p>
 
           <div class="form-group">
-            <label for="f-front">Front Image URL (Imgur)</label>
+            <label for="f-front">Front Image URL</label>
             <input type="url" id="f-front" class="form-control" placeholder="https://i.imgur.com/..." value="${esc(card?.frontImageUrl)}">
           </div>
           <div class="form-group">
-            <label for="f-back">Back Image URL (Imgur)</label>
+            <label for="f-back">Back Image URL</label>
             <input type="url" id="f-back" class="form-control" placeholder="https://i.imgur.com/..." value="${esc(card?.backImageUrl)}">
+            <p style="margin:4px 0 0;font-size:11px;color:var(--text-secondary);">Upload to <a href="https://imgur.com" target="_blank" rel="noopener" style="color:var(--accent-blue);">imgur.com</a> and paste the direct image link (ends in .jpg/.png).</p>
           </div>
           <div class="form-group">
             <label for="f-notes">Notes</label>
@@ -840,9 +841,13 @@ function openLightbox(card) {
   overlay.className = 'lightbox-overlay';
 
   const imgs = [];
-  if (card.frontImageUrl) imgs.push(`<img src="${card.frontImageUrl}" alt="Front of ${esc(card.player)}">`);
-  if (card.backImageUrl) imgs.push(`<img src="${card.backImageUrl}" alt="Back of ${esc(card.player)}">`);
+  if (card.frontImageUrl) imgs.push(`<img src="${card.frontImageUrl}" alt="Front of ${esc(card.player)}" onerror="this.replaceWith(document.createTextNode(''));">`);
+  if (card.backImageUrl) imgs.push(`<img src="${card.backImageUrl}" alt="Back of ${esc(card.player)}" onerror="this.replaceWith(document.createTextNode(''));">`);
 
+  if (!imgs.length) {
+    showToast('No images saved for this card. Add an image URL (e.g. Imgur) when editing.', 'warning');
+    return;
+  }
   overlay.innerHTML = `
     <button class="lightbox-close" aria-label="Close lightbox">&times;</button>
     ${imgs.join('')}
