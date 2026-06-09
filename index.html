@@ -8,176 +8,13 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <style>
-    /* ── Full-screen dashboard layout ── */
-    body {
-      padding-top: calc(var(--nav-height) + 28px);
-      height: 100vh;
-      overflow: hidden;
-    }
+    body { padding-top: calc(var(--nav-height) + 28px); }
 
-    .dashboard-shell {
-      display: grid;
-      grid-template-columns: 320px 1fr;
-      height: calc(100vh - var(--nav-height) - 28px);
-      overflow: hidden;
-    }
-
-    /* ── LEFT SIDEBAR ── */
-    .dash-sidebar {
-      display: flex;
-      flex-direction: column;
-      border-right: 1px solid var(--border);
-      overflow-y: auto;
-      background: var(--bg-secondary);
-    }
-
-    .dash-clock {
-      padding: 16px 20px 0;
-    }
-
-    /* Metric cards stacked in sidebar */
-    .dash-metrics {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .metric-card {
-      padding: 18px 20px;
-      border-right: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .metric-card:nth-child(even) { border-right: none; }
-
-    .metric-card .label {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 10px;
-    }
-
-    .metric-value {
-      font-size: 22px;
-    }
-
-    /* Exposure in sidebar */
-    .dash-exposure {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .exposure-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-
-    .exposure-total {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--text-secondary);
-    }
-
-    .exposure-rows {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .exposure-sport {
-      display: grid;
-      grid-template-columns: 48px 1fr 52px 52px;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .exposure-sport-label {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--text-secondary);
-    }
-
-    .exposure-bar-track {
-      height: 5px;
-      background: var(--bg-tertiary);
-      overflow: hidden;
-    }
-
-    .exposure-bar-fill {
-      height: 100%;
-      transition: width 0.4s ease;
-    }
-
-    .exposure-pct {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      font-weight: 600;
-      text-align: right;
-    }
-
-    .exposure-cost {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--text-secondary);
-      text-align: right;
-    }
-
-    .exposure-divider { display: none; }
-
-    /* Quick links in sidebar */
-    .dash-links {
-      padding: 16px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .dash-links .label { margin: 0 0 6px; display: block; }
-
-    .dash-links a.btn {
-      justify-content: flex-start;
-      width: 100%;
-      font-size: 12px;
-    }
-
-    /* ── RIGHT: NEWS FEED ── */
-    .dash-news {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      background: var(--bg-primary);
-    }
-
-    .dash-news-header {
-      padding: 14px 20px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-shrink: 0;
-      background: var(--bg-secondary);
-    }
-
-    #news-list {
-      flex: 1;
-      overflow-y: auto;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      align-content: start;
-      gap: 0;
-    }
-
-    /* ── TICKER ── */
+    /* ── SCORE TICKER ── */
     .score-ticker {
       position: fixed;
       top: var(--nav-height);
-      left: 0;
-      right: 0;
+      left: 0; right: 0;
       height: 28px;
       background: var(--bg-tertiary);
       border-bottom: 1px solid var(--border);
@@ -186,22 +23,17 @@
       display: flex;
       align-items: center;
     }
-
     .ticker-track {
       display: flex;
       align-items: center;
       white-space: nowrap;
       animation: ticker-scroll 120s linear infinite;
-      gap: 0;
     }
-
     .ticker-track:hover { animation-play-state: paused; }
-
     @keyframes ticker-scroll {
       0%   { transform: translateX(0); }
       100% { transform: translateX(-50%); }
     }
-
     .ticker-item {
       display: inline-flex;
       align-items: center;
@@ -212,33 +44,143 @@
       color: var(--text-primary);
       border-right: 1px solid var(--border);
     }
-
     .ticker-sport {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+      opacity: 0.6; background: #f5a62322; padding: 1px 4px;
+    }
+    .ticker-teams  { font-weight: 500; }
+    .ticker-score  { font-weight: 700; }
+    .ticker-status { font-size: 9px; opacity: 0.65; letter-spacing: 0.04em; }
+    .ticker-live-dot {
+      display: inline-block; width: 5px; height: 5px; border-radius: 50%;
+      background: #00d084; animation: pulse 1.5s ease-in-out infinite; flex-shrink: 0;
+    }
+
+    /* ── PAGE GRID: skinny links | main content ── */
+    .dash-page {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      min-height: calc(100vh - var(--nav-height) - 28px);
+    }
+
+    /* ── LEFT LINKS COLUMN ── */
+    .dash-links-col {
+      border-right: 1px solid var(--border);
+      background: var(--bg-secondary);
+      display: flex;
+      flex-direction: column;
+      padding: 16px 10px;
+      gap: 6px;
+    }
+    .dash-links-col .links-label {
       font-size: 9px;
       font-weight: 700;
       letter-spacing: 0.1em;
-      opacity: 0.6;
-      background: #f5a62322;
-      padding: 1px 4px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+    .dash-links-col a.btn {
+      font-size: 11px;
+      padding: 6px 8px;
+      justify-content: flex-start;
+      width: 100%;
+      white-space: nowrap;
     }
 
-    .ticker-teams   { font-weight: 500; }
-    .ticker-score   { font-weight: 700; }
-
-    .ticker-status {
-      font-size: 9px;
-      opacity: 0.65;
-      letter-spacing: 0.04em;
+    /* ── MAIN CONTENT ── */
+    .dash-main {
+      display: flex;
+      flex-direction: column;
+      padding: 20px 24px;
+      gap: 16px;
     }
 
-    .ticker-live-dot {
-      display: inline-block;
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: #00d084;
-      animation: pulse 1.5s ease-in-out infinite;
+    /* Top half: clock + metrics + exposure */
+    .dash-top {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Metric strip */
+    .dash-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      border: 1px solid var(--border);
+    }
+    .metric-card {
+      padding: 20px 24px;
+      border-right: 1px solid var(--border);
+      background: var(--bg-secondary);
+    }
+    .metric-card:last-child { border-right: none; }
+    .metric-card .label { display: block; margin-bottom: 8px; }
+    .metric-value { font-size: 28px; }
+
+    /* Exposure */
+    .dash-exposure {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      padding: 14px 20px;
+    }
+    .exposure-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .exposure-total {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+    .exposure-rows { display: flex; gap: 0; }
+    .exposure-sport { flex: 1; min-width: 0; }
+    .exposure-sport-label {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--text-secondary);
+      display: block; margin-bottom: 6px;
+    }
+    .exposure-bar-track {
+      height: 5px; background: var(--bg-tertiary); margin-bottom: 6px; overflow: hidden;
+    }
+    .exposure-bar-fill { height: 100%; transition: width 0.4s ease; }
+    .exposure-pct {
+      font-family: var(--font-mono); font-size: 14px; font-weight: 600; display: block;
+    }
+    .exposure-cost {
+      font-family: var(--font-mono); font-size: 10px; color: var(--text-secondary);
+      display: block; margin-top: 2px;
+    }
+    .exposure-divider {
+      width: 1px; background: var(--border); margin: 0 16px; flex-shrink: 0;
+    }
+
+    /* Bottom half: news */
+    .dash-news {
+      flex: 1;
+      border: 1px solid var(--border);
+      background: var(--bg-secondary);
+      display: flex;
+      flex-direction: column;
+      min-height: 420px;
+    }
+    .dash-news-header {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       flex-shrink: 0;
+    }
+    #news-list {
+      flex: 1;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      align-content: start;
     }
   </style>
 </head>
@@ -277,80 +219,78 @@
     </div>
   </div>
 
-  <!-- DASHBOARD SHELL -->
-  <div class="dashboard-shell">
+  <!-- PAGE -->
+  <div class="dash-page">
 
-    <!-- LEFT SIDEBAR -->
-    <aside class="dash-sidebar">
+    <!-- Skinny links column -->
+    <nav class="dash-links-col" aria-label="Quick links">
+      <span class="links-label">Quick Links</span>
+      <a href="https://www.ebay.com" target="_blank" rel="noopener noreferrer" class="btn">
+        <i class="ti ti-external-link"></i> eBay
+      </a>
+      <a href="https://www.alt.xyz" target="_blank" rel="noopener noreferrer" class="btn">
+        <i class="ti ti-external-link"></i> ALT
+      </a>
+      <a href="https://baseballsavant.mlb.com/" target="_blank" rel="noopener noreferrer" class="btn">
+        <i class="ti ti-external-link"></i> Baseball Savant
+      </a>
+      <a href="https://prospectsavant.com/leaders" target="_blank" rel="noopener noreferrer" class="btn">
+        <i class="ti ti-external-link"></i> Prospect Savant
+      </a>
+      <a href="https://www.marketmoversapp.com/" target="_blank" rel="noopener noreferrer" class="btn">
+        <i class="ti ti-external-link"></i> Market Movers
+      </a>
+    </nav>
 
-      <!-- Clock -->
-      <div class="dash-clock">
+    <!-- Main content -->
+    <main class="dash-main">
+
+      <!-- TOP: clock + metrics + exposure -->
+      <div class="dash-top">
         <span class="live-clock" id="live-clock" aria-live="polite" aria-atomic="true">—</span>
-      </div>
 
-      <!-- Portfolio metrics -->
-      <div class="dash-metrics" role="region" aria-label="Portfolio snapshot">
-        <div class="metric-card">
-          <span class="label">Cash on Hand</span>
-          <span class="metric-value mono" id="metric-cash">$0.00</span>
+        <div class="dash-metrics" role="region" aria-label="Portfolio snapshot">
+          <div class="metric-card">
+            <span class="label">Cash on Hand</span>
+            <span class="metric-value mono" id="metric-cash">$0.00</span>
+          </div>
+          <div class="metric-card">
+            <span class="label">Cards in Inventory</span>
+            <span class="metric-value mono text-blue" id="metric-cards">0</span>
+          </div>
+          <div class="metric-card">
+            <span class="label">Portfolio Value</span>
+            <span class="metric-value mono" id="metric-value">$0.00</span>
+          </div>
+          <div class="metric-card">
+            <span class="label">Realized P&amp;L</span>
+            <span class="metric-value mono text-green" id="metric-pl">+$0.00</span>
+          </div>
         </div>
-        <div class="metric-card">
-          <span class="label">Cards in Inventory</span>
-          <span class="metric-value mono text-blue" id="metric-cards">0</span>
-        </div>
-        <div class="metric-card">
-          <span class="label">Portfolio Value</span>
-          <span class="metric-value mono" id="metric-value">$0.00</span>
-        </div>
-        <div class="metric-card">
-          <span class="label">Realized P&amp;L</span>
-          <span class="metric-value mono text-green" id="metric-pl">+$0.00</span>
-        </div>
-      </div>
 
-      <!-- Exposure -->
-      <div class="dash-exposure" id="exposure-box" role="region" aria-label="Portfolio exposure by sport">
-        <div class="exposure-header">
-          <span class="label" style="margin:0;">Exposure</span>
-          <span class="exposure-total" id="exposure-total"></span>
-        </div>
-        <div class="exposure-rows" id="exposure-rows">
-          <span style="color:var(--text-secondary);font-size:11px;">No data loaded</span>
+        <div class="dash-exposure" id="exposure-box" role="region" aria-label="Portfolio exposure by sport">
+          <div class="exposure-header">
+            <span class="label" style="margin:0;">Exposure</span>
+            <span class="exposure-total" id="exposure-total"></span>
+          </div>
+          <div class="exposure-rows" id="exposure-rows">
+            <span style="color:var(--text-secondary);font-size:11px;">No data loaded</span>
+          </div>
         </div>
       </div>
 
-      <!-- Quick links -->
-      <div class="dash-links">
-        <span class="label">Quick Links</span>
-        <a href="https://www.ebay.com" target="_blank" rel="noopener noreferrer" class="btn">
-          <i class="ti ti-external-link"></i> eBay
-        </a>
-        <a href="https://www.alt.xyz" target="_blank" rel="noopener noreferrer" class="btn">
-          <i class="ti ti-external-link"></i> ALT
-        </a>
-        <a href="https://baseballsavant.mlb.com/" target="_blank" rel="noopener noreferrer" class="btn">
-          <i class="ti ti-external-link"></i> Baseball Savant
-        </a>
-        <a href="https://prospectsavant.com/leaders" target="_blank" rel="noopener noreferrer" class="btn">
-          <i class="ti ti-external-link"></i> Prospect Savant
-        </a>
-        <a href="https://www.marketmoversapp.com/" target="_blank" rel="noopener noreferrer" class="btn">
-          <i class="ti ti-external-link"></i> Market Movers
-        </a>
-      </div>
+      <!-- BOTTOM: news -->
+      <section class="dash-news" aria-label="Sports news headlines">
+        <div class="dash-news-header">
+          <span class="panel-title">Sports News</span>
+          <span class="text-muted" style="font-size:10px;font-family:var(--font-mono);">AUTO-REFRESH 5m</span>
+        </div>
+        <div id="news-list" aria-live="polite">
+          <p style="padding:20px;color:var(--text-secondary);font-size:13px;grid-column:1/-1;">Loading news...</p>
+        </div>
+      </section>
 
-    </aside>
-
-    <!-- RIGHT: NEWS FEED -->
-    <section class="dash-news" aria-label="Sports news headlines">
-      <div class="dash-news-header">
-        <span class="panel-title">Sports News</span>
-        <span class="text-muted" style="font-size:10px;font-family:var(--font-mono);">AUTO-REFRESH 5m</span>
-      </div>
-      <div id="news-list" aria-live="polite">
-        <p style="padding:24px;color:var(--text-secondary);font-size:13px;grid-column:1/-1;">Loading news...</p>
-      </div>
-    </section>
+    </main>
 
   </div>
 
