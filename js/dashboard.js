@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderExposure();
   initTicker();
   initNewsPanel();
+  initYouTubeSidebar();
   document.addEventListener('data-loaded', () => {
     renderPortfolioStrip();
     renderExposure();
@@ -218,4 +219,63 @@ async function fetchNews() {
   } catch {
     container.innerHTML = '<p style="padding:16px;color:var(--text-secondary);font-size:12px;">News unavailable</p>';
   }
+}
+
+// ===== YOUTUBE SIDEBAR =====
+// Channel IDs: visit youtube.com/@handle → right-click → View Page Source → search "channelId"
+const YT_CHANNELS = [
+  { name: 'Card Collector 2',  id: 'UCbUwX0sho_2c9AweeyA8DlA' },
+  { name: 'Roth Cards',        id: 'UCDZl-2hTjbE_6nCNLkfqfxA' },
+  { name: 'Trike Cards',       id: 'REPLACE_WITH_TRIKECARDS_CHANNEL_ID' }, // TODO: find @trikecards UC channel ID
+  { name: "Spitballin' Cards", id: 'UCncldJMnwJNsxI-RFNXolGQ' },
+];
+
+async function initYouTubeSidebar() {
+  const container = document.getElementById('yt-sidebar');
+  if (!container) return;
+
+  const results = await Promise.allSettled(
+    YT_CHANNELS.map(ch => {
+      const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${ch.id}`;
+      const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}&count=1`;
+      return fetch(apiUrl)
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(data => {
+          const item = data.items?.[0];
+          if (!item) throw new Error('no items');
+          const videoId = item.link?.split('v=')?.[1]?.split('&')?.[0] || '';
+          const date = item.pubDate ? new Date(item.pubDate) : null;
+          return {
+            name: ch.name,
+            title: item.title || '',
+            link: item.link || '#',
+            thumb: videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : '',
+            date,
+          };
+        });
+    })
+  );
+
+  container.innerHTML = results.map((r, i) => {
+    if (r.status !== 'fulfilled') {
+      return `
+        <div class="yt-channel-card">
+          <div class="yt-channel-name">${YT_CHANNELS[i].name}</div>
+          <div class="yt-video-date" style="color:var(--accent-red);">Unavailable</div>
+        </div>`;
+    }
+    const { name, title, link, thumb, date } = r.value;
+    const dateStr = date
+      ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      : '';
+    return `
+      <div class="yt-channel-card">
+        <div class="yt-channel-name">${name}</div>
+        <a class="yt-card-link" href="${link}" target="_blank" rel="noopener noreferrer">
+          ${thumb ? `<img class="yt-thumb" src="${thumb}" alt="" loading="lazy">` : ''}
+          <div class="yt-video-title">${title}</div>
+          <div class="yt-video-date">${dateStr}</div>
+        </a>
+      </div>`;
+  }).join('');
 }
