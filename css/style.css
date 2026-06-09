@@ -710,6 +710,12 @@ tbody td.text-col {
   cursor: pointer;
 }
 
+.btn-img-empty {
+  opacity: 0.2;
+  cursor: default;
+  pointer-events: none;
+}
+
 /* ===== PAGINATION ===== */
 .pagination {
   display: flex;

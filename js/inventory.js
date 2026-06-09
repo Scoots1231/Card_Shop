@@ -207,7 +207,7 @@ function renderRow(card, rowNum) {
       <td>${statusBadge}</td>
       <td>
         <div class="action-cell" onclick="event.stopPropagation()">
-          ${hasImages ? `<button class="btn-img" data-id="${card.id}" title="View images" aria-label="View card images"><i class="ti ti-camera"></i></button>` : ''}
+          <button class="btn-img${hasImages ? '' : ' btn-img-empty'}" data-id="${card.id}" title="${hasImages ? 'View images' : 'No images saved'}" aria-label="View card images"${hasImages ? '' : ' disabled'}><i class="ti ti-camera"></i></button>
           <button class="btn-edit" data-id="${card.id}" aria-label="Edit card"><i class="ti ti-pencil"></i></button>
           ${card.status !== 'Sold' ? `<button class="btn-sold" data-id="${card.id}" aria-label="Mark as sold"
             style="color:var(--accent-green);border-color:var(--accent-green);padding:2px 7px;font-size:11px;font-weight:600;letter-spacing:0.04em;">
