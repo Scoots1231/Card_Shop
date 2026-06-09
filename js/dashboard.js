@@ -234,24 +234,32 @@ async function initYouTubeSidebar() {
   if (!container) return;
 
   const results = await Promise.allSettled(
-    YT_CHANNELS.map(ch => {
+    YT_CHANNELS.map(async ch => {
       const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${ch.id}`;
-      const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}&count=1`;
-      return fetch(apiUrl)
-        .then(r => r.ok ? r.json() : Promise.reject())
-        .then(data => {
-          const item = data.items?.[0];
-          if (!item) throw new Error('no items');
-          const videoId = item.link?.split('v=')?.[1]?.split('&')?.[0] || '';
-          const date = item.pubDate ? new Date(item.pubDate) : null;
-          return {
-            name: ch.name,
-            title: item.title || '',
-            link: item.link || '#',
-            thumb: videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : '',
-            date,
-          };
-        });
+      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(feedUrl)}`;
+
+      const res = await fetch(proxyUrl);
+      if (!res.ok) throw new Error('fetch failed');
+      const json = await res.json();
+      if (!json.contents) throw new Error('no contents');
+
+      const doc = new DOMParser().parseFromString(json.contents, 'text/xml');
+      const entry = doc.querySelector('entry');
+      if (!entry) throw new Error('no entries');
+
+      const entryId = entry.querySelector('id')?.textContent || '';
+      const videoId = entryId.replace('yt:video:', '');
+      const title = entry.querySelector('title')?.textContent || '';
+      const link = entry.querySelector('link')?.getAttribute('href') || `https://www.youtube.com/watch?v=${videoId}`;
+      const published = entry.querySelector('published')?.textContent || '';
+
+      return {
+        name: ch.name,
+        title,
+        link,
+        thumb: videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : '',
+        date: published ? new Date(published) : null,
+      };
     })
   );
 
