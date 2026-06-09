@@ -239,7 +239,6 @@ function renderRow(card, rowNum) {
       <td>${statusBadge}</td>
       <td>
         <div class="action-cell" onclick="event.stopPropagation()">
-          <button class="btn-img${hasImages ? '' : ' btn-img-empty'}" data-id="${card.id}" title="${hasImages ? 'View images' : 'No images saved'}" aria-label="View card images"${hasImages ? '' : ' disabled'}><i class="ti ti-camera"></i></button>
           <button class="btn-edit" data-id="${card.id}" aria-label="Edit card"><i class="ti ti-pencil"></i></button>
           ${card.status !== 'Sold' ? `<button class="btn-sold" data-id="${card.id}" aria-label="Mark as sold"
             style="color:var(--accent-green);border-color:var(--accent-green);padding:2px 7px;font-size:11px;font-weight:600;letter-spacing:0.04em;">
@@ -285,15 +284,6 @@ function attachRowHandlers(tbody, cards) {
       saveSessionData();
       showToast('Card deleted.', 'success');
       render();
-    });
-  });
-
-  // Image buttons
-  tbody.querySelectorAll('.btn-img').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      const card = window.AppData.cards.find(c => c.id === btn.dataset.id);
-      if (card) openLightbox(card);
     });
   });
 
@@ -838,33 +828,4 @@ function openCashModal() {
   });
 
   input?.focus();
-}
-
-// ===== LIGHTBOX =====
-function openLightbox(card) {
-  const existing = document.getElementById('lightbox-overlay');
-  if (existing) existing.remove();
-
-  const overlay = document.createElement('div');
-  overlay.id = 'lightbox-overlay';
-  overlay.className = 'lightbox-overlay';
-
-  const imgs = [];
-  if (card.frontImageUrl) imgs.push(`<img src="${card.frontImageUrl}" alt="Front of ${esc(card.player)}" onerror="this.replaceWith(document.createTextNode(''));">`);
-  if (card.backImageUrl) imgs.push(`<img src="${card.backImageUrl}" alt="Back of ${esc(card.player)}" onerror="this.replaceWith(document.createTextNode(''));">`);
-
-  if (!imgs.length) {
-    showToast('No images saved for this card. Add an image URL (e.g. Imgur) when editing.', 'warning');
-    return;
-  }
-  overlay.innerHTML = `
-    <button class="lightbox-close" aria-label="Close lightbox">&times;</button>
-    ${imgs.join('')}
-  `;
-  document.body.appendChild(overlay);
-
-  const close = () => overlay.remove();
-  overlay.querySelector('.lightbox-close')?.addEventListener('click', close);
-  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); }, { once: true });
 }

@@ -706,11 +706,6 @@ tbody td.text-col {
   color: #fff;
 }
 
-.btn-img-empty {
-  opacity: 0.2;
-  cursor: default;
-  pointer-events: none;
-}
 
 /* ===== PAGINATION ===== */
 .pagination {
@@ -993,41 +988,6 @@ tbody td.text-col {
   to { transform: rotate(360deg); }
 }
 
-/* ===== LIGHTBOX ===== */
-.lightbox-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.9);
-  z-index: 3000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
-  padding: 40px;
-}
-
-.lightbox-overlay img {
-  max-width: 45%;
-  max-height: 80vh;
-  object-fit: contain;
-  border: 1px solid var(--border);
-}
-
-.lightbox-close {
-  position: absolute;
-  top: 16px;
-  right: 24px;
-  font-size: 28px;
-  color: var(--text-secondary);
-  background: none;
-  border: none;
-  cursor: pointer;
-  line-height: 1;
-}
-
-.lightbox-close:hover {
-  color: var(--text-primary);
-}
 
 /* ===== ANALYTICS CHARTS ===== */
 .chart-card {
