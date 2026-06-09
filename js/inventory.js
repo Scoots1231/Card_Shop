@@ -606,9 +606,10 @@ function saveCard(existingId) {
 
   } else {
     window.AppData.cards.push(cardData);
-    sendSlackNotification(`🃏 *Card Added*\n*${cardData.player}* — ${cardData.year} ${cardData.set} ${conditionValue(cardData)}\nPaid: ${formatCurrency(cardData.purchasePrice)}`);
     if (cardData.status === 'Sold' && cardData.salePrice) {
-      sendSlackNotification(`💰 *Card Sold*\n*${cardData.player}* — ${cardData.year} ${cardData.set}\nSold for: ${formatCurrency(cardData.salePrice)} | P&L: ${formatPL(cardData.salePrice - cardData.purchasePrice)}`);
+      sendSlackNotification(`💰 *Card Sold*\n*${cardData.player}* — ${cardData.year} ${cardData.set} ${conditionValue(cardData)}\nPaid: ${formatCurrency(cardData.purchasePrice)} | Sold: ${formatCurrency(cardData.salePrice)} | P&L: ${formatPL(calculatePL(cardData))}`);
+    } else {
+      sendSlackNotification(`🃏 *Card Added*\n*${cardData.player}* — ${cardData.year} ${cardData.set} ${conditionValue(cardData)}\nPaid: ${formatCurrency(cardData.purchasePrice)}`);
     }
   }
 

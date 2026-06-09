@@ -4,6 +4,15 @@ let sportChart = null;
 let plSportChart = null;
 let plTimeChart = null;
 
+// Read theme colors once — used by both chart functions
+function getThemeColors() {
+  const style = getComputedStyle(document.documentElement);
+  return {
+    green: style.getPropertyValue('--accent-green').trim() || '#00d084',
+    red:   style.getPropertyValue('--accent-red').trim()   || '#ff4d4d',
+  };
+}
+
 let sportFilter = 'all'; // 'all' | 'storage' | 'sold'
 let plMode = 'combined'; // 'realized' | 'unrealized' | 'combined'
 
@@ -117,7 +126,7 @@ function renderSportDonut() {
 }
 
 function filterBySportToggle(cards) {
-  if (sportFilter === 'storage') return cards.filter(c => c.status === 'In Storage');
+  if (sportFilter === 'storage') return cards.filter(c => c.status === 'In Storage' || c.status === 'Posted$');
   if (sportFilter === 'sold') return cards.filter(c => c.status === 'Sold');
   return cards;
 }
@@ -139,8 +148,7 @@ function renderPLSportChart() {
 
   if (plSportChart) plSportChart.destroy();
 
-  const accentGreen = getComputedStyle(document.documentElement).getPropertyValue('--accent-green').trim() || '#00d084';
-  const accentRed = getComputedStyle(document.documentElement).getPropertyValue('--accent-red').trim() || '#ff4d4d';
+  const { green: accentGreen, red: accentRed } = getThemeColors();
 
   plSportChart = new Chart(ctx, {
     type: 'bar',
@@ -217,7 +225,7 @@ function renderPLTimeChart() {
   const today = new Date().toISOString().slice(0, 10);
   for (const card of cards.filter(c => c.status !== 'Sold')) {
     if (card.estimatedValue && card.purchaseDate) {
-      events.push({ date: today, pl: card.estimatedValue - (card.purchasePrice || 0), label: `Unrealized: ${card.player}` });
+      events.push({ date: today, pl: card.estimatedValue, label: `Unrealized: ${card.player}` });
     }
   }
 
@@ -240,8 +248,7 @@ function renderPLTimeChart() {
     return;
   }
 
-  const accentGreen = getComputedStyle(document.documentElement).getPropertyValue('--accent-green').trim() || '#00d084';
-  const accentRed = getComputedStyle(document.documentElement).getPropertyValue('--accent-red').trim() || '#ff4d4d';
+  const { green: accentGreen, red: accentRed } = getThemeColors();
   const lastVal = points[points.length - 1]?.y || 0;
   const lineColor = lastVal >= 0 ? accentGreen : accentRed;
 
@@ -294,7 +301,7 @@ function renderPLTimeChart() {
 // ===== TOP WINNERS / LOSERS =====
 function renderTopTables() {
   const cards = window.AppData.cards.filter(c => !isCashDeposit(c) && c.status === 'Sold');
-  const sorted = cards.map(c => ({ ...c, pl: calculatePL(c), pct: c.purchasePrice > 0 ? (calculatePL(c) / c.purchasePrice) * 100 : 0 }))
+  const sorted = cards.map(c => { const pl = calculatePL(c); return { ...c, pl, pct: c.purchasePrice > 0 ? (pl / c.purchasePrice) * 100 : 0 }; })
     .sort((a, b) => b.pl - a.pl);
 
   const winners = sorted.filter(c => c.pl >= 0).slice(0, 10);
