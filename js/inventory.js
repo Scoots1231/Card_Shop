@@ -57,6 +57,37 @@ function bindToolbar() {
 
   document.getElementById('add-card-btn')?.addEventListener('click', () => openModal(null));
   document.getElementById('add-cash-btn')?.addEventListener('click', openCashModal);
+
+  // Clickable column header sorting
+  document.querySelectorAll('thead th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const field = th.dataset.sort;
+      if (state.sortField === field) {
+        state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        state.sortField = field;
+        state.sortDir = 'asc';
+      }
+      updateSortIcons();
+      render();
+    });
+  });
+}
+
+function updateSortIcons() {
+  document.querySelectorAll('thead th[data-sort]').forEach(th => {
+    const icon = th.querySelector('i');
+    if (!icon) return;
+    if (th.dataset.sort === state.sortField) {
+      icon.className = state.sortDir === 'asc' ? 'ti ti-chevron-up' : 'ti ti-chevron-down';
+      icon.style.opacity = '1';
+      icon.style.color = 'var(--accent-blue)';
+    } else {
+      icon.className = 'ti ti-selector';
+      icon.style.opacity = '0.4';
+      icon.style.color = '';
+    }
+  });
 }
 
 // ===== FILTERING & SORTING =====
@@ -83,11 +114,18 @@ function getFilteredCards() {
     if (!aCash && bCash) return -1;
     let va, vb;
     switch (state.sortField) {
-      case 'player': va = a.player.toLowerCase(); vb = b.player.toLowerCase(); break;
-      case 'purchasePrice': va = a.purchasePrice; vb = b.purchasePrice; break;
-      case 'estimatedValue': va = a.estimatedValue; vb = b.estimatedValue; break;
-      case 'pl': va = calculatePL(a); vb = calculatePL(b); break;
-      default: va = a.purchaseDate || ''; vb = b.purchaseDate || ''; break;
+      case 'player':        va = a.player.toLowerCase();   vb = b.player.toLowerCase();   break;
+      case 'year':          va = a.year || '';             vb = b.year || '';             break;
+      case 'set':           va = (a.set||'').toLowerCase();vb = (b.set||'').toLowerCase();break;
+      case 'cardNumber':    va = a.cardNumber || '';       vb = b.cardNumber || '';       break;
+      case 'sport':         va = a.sport || '';            vb = b.sport || '';            break;
+      case 'type':          va = a.type || '';             vb = b.type || '';             break;
+      case 'grade':         va = parseFloat(a.grade)||0;   vb = parseFloat(b.grade)||0;   break;
+      case 'purchasePrice': va = a.purchasePrice;          vb = b.purchasePrice;          break;
+      case 'purchaseDate':  va = a.purchaseDate || '';     vb = b.purchaseDate || '';     break;
+      case 'estimatedValue':va = a.estimatedValue;         vb = b.estimatedValue;         break;
+      case 'pl':            va = calculatePL(a);           vb = calculatePL(b);           break;
+      default:              va = a.purchaseDate || '';     vb = b.purchaseDate || '';     break;
     }
     if (va < vb) return state.sortDir === 'asc' ? -1 : 1;
     if (va > vb) return state.sortDir === 'asc' ? 1 : -1;
