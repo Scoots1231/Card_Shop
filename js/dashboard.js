@@ -226,8 +226,7 @@ async function fetchNews() {
 const YT_CHANNELS = [
   { name: 'Card Collector 2',  id: 'UCbUwX0sho_2c9AweeyA8DlA' },
   { name: 'Roth Cards',        id: 'UCDZl-2hTjbE_6nCNLkfqfxA' },
-  { name: 'Trike Cards',       id: 'REPLACE_WITH_TRIKECARDS_CHANNEL_ID' }, // TODO: find @trikecards UC channel ID
-  { name: "Spitballin' Cards", id: 'UCncldJMnwJNsxI-RFNXolGQ' },
+{ name: "Spitballin' Cards", id: 'UCncldJMnwJNsxI-RFNXolGQ' },
 ];
 
 async function initYouTubeSidebar() {
