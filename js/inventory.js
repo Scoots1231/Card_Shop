@@ -582,41 +582,10 @@ function saveCard(existingId) {
     const idx = window.AppData.cards.findIndex(c => c.id === existingId);
     if (idx >= 0) window.AppData.cards[idx] = cardData;
 
-    // If purchase price changed, adjust cash by the difference (deduct more or refund)
-    const priceDiff = (cardData.purchasePrice || 0) - (prev?.purchasePrice || 0);
-    if (priceDiff !== 0) {
-      addCashEntry(
-        priceDiff > 0
-          ? `PURCHASE ADJUSTMENT — ${cardData.player}`
-          : `PURCHASE REFUND — ${cardData.player}`,
-        -priceDiff,
-        cardData.purchaseDate
-      );
-    }
-
-    // If card newly marked Sold (wasn't sold before), add sale price to cash
-    if (cardData.status === 'Sold' && prev?.status !== 'Sold') {
-      addCashEntry(`SALE — ${cardData.player}`, cardData.salePrice || 0, cardData.saleDate || cardData.purchaseDate);
-    }
-    // If card un-sold (was sold, now in storage), reverse the sale
-    if (cardData.status !== 'Sold' && prev?.status === 'Sold') {
-      addCashEntry(`SALE REVERSAL — ${cardData.player}`, -(prev?.salePrice || 0), cardData.purchaseDate);
-    }
-    // If card was already sold and sale price changed, adjust the difference
-    if (cardData.status === 'Sold' && prev?.status === 'Sold') {
-      const saleDiff = (cardData.salePrice || 0) - (prev?.salePrice || 0);
-      if (saleDiff !== 0) {
-        addCashEntry(`SALE ADJUSTMENT — ${cardData.player}`, saleDiff, cardData.saleDate || cardData.purchaseDate);
-      }
-    }
   } else {
     window.AppData.cards.push(cardData);
-    // New card purchased — deduct purchase price from cash
-    addCashEntry(`PURCHASE — ${cardData.player}`, -(cardData.purchasePrice || 0), cardData.purchaseDate);
     sendSlackNotification(`🃏 *Card Added*\n*${cardData.player}* — ${cardData.year} ${cardData.set} ${conditionValue(cardData)}\nPaid: ${formatCurrency(cardData.purchasePrice)}`);
-    // If added directly as Sold — also add the sale proceeds
     if (cardData.status === 'Sold' && cardData.salePrice) {
-      addCashEntry(`SALE — ${cardData.player}`, cardData.salePrice, cardData.saleDate || cardData.purchaseDate);
       sendSlackNotification(`💰 *Card Sold*\n*${cardData.player}* — ${cardData.year} ${cardData.set}\nSold for: ${formatCurrency(cardData.salePrice)} | P&L: ${formatPL(cardData.salePrice - cardData.purchasePrice)}`);
     }
   }
@@ -733,9 +702,6 @@ function openSoldModal(card) {
       saleDate,
       platform,
     };
-
-    // Add sale proceeds to cash
-    addCashEntry(`SALE — ${card.player}`, salePrice, saleDate);
 
     const pl = salePrice - (card.purchasePrice || 0);
     sendSlackNotification(`💰 *Card Sold*\n*${card.player}* — ${card.year} ${card.set} ${conditionValue(card)}\nSold for: ${formatCurrency(salePrice)} on ${platform || 'N/A'}\nP&L: ${formatPL(pl)}`);
