@@ -94,26 +94,39 @@
       word-break: break-word;
     }
 
-    /* ── YOUTUBE SIDEBAR ── */
-    .yt-section-divider {
-      height: 1px;
-      background: var(--border);
-      margin: 8px 0 6px;
-      flex-shrink: 0;
-    }
-    .yt-channel-card {
+    /* ── YOUTUBE ROW ── */
+    .dash-yt {
+      border: 1px solid var(--border);
+      background: var(--bg-secondary);
       display: flex;
       flex-direction: column;
-      margin-bottom: 14px;
     }
-    .yt-channel-card:last-child { margin-bottom: 0; }
+    .dash-yt-header {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    #yt-sidebar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .yt-channel-card {
+      padding: 14px 16px;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+    .yt-channel-card:last-child { border-right: none; }
     .yt-channel-name {
       font-size: 9px;
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--text-secondary);
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
     .yt-card-link {
       display: block;
@@ -128,10 +141,10 @@
       object-fit: cover;
     }
     .yt-video-title {
-      font-size: 11px;
+      font-size: 12px;
       color: var(--text-primary);
-      line-height: 1.35;
-      margin-top: 5px;
+      line-height: 1.4;
+      margin-top: 8px;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
@@ -141,7 +154,7 @@
       font-size: 10px;
       color: var(--text-secondary);
       font-family: var(--font-mono);
-      margin-top: 3px;
+      margin-top: 4px;
     }
 
     /* ── MAIN CONTENT ── */
@@ -297,11 +310,6 @@
         <i class="ti ti-external-link"></i> Market Movers
       </a>
 
-      <div class="yt-section-divider"></div>
-      <span class="links-label">YouTube</span>
-      <div id="yt-sidebar">
-        <p style="font-size:11px;color:var(--text-secondary);padding:4px 0;">Loading&hellip;</p>
-      </div>
     </nav>
 
     <!-- Main content -->
@@ -349,6 +357,17 @@
         </div>
         <div id="news-list" aria-live="polite">
           <p style="padding:20px;color:var(--text-secondary);font-size:13px;grid-column:1/-1;">Loading news...</p>
+        </div>
+      </section>
+
+      <!-- YOUTUBE LATEST VIDEOS -->
+      <section class="dash-yt" aria-label="YouTube latest videos">
+        <div class="dash-yt-header">
+          <span class="panel-title">YouTube</span>
+          <span class="text-muted" style="font-size:10px;font-family:var(--font-mono);">LATEST VIDEOS</span>
+        </div>
+        <div id="yt-sidebar" aria-live="polite">
+          <p style="padding:20px;color:var(--text-secondary);font-size:13px;grid-column:1/-1;">Loading&hellip;</p>
         </div>
       </section>
 
