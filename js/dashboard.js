@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
   renderExposure();
   initTicker();
   initNewsPanel();
-  initYouTubeSidebar();
   document.addEventListener('data-loaded', () => {
     renderPortfolioStrip();
     renderExposure();
@@ -221,67 +220,4 @@ async function fetchNews() {
   }
 }
 
-// ===== YOUTUBE SIDEBAR =====
-// Channel IDs: visit youtube.com/@handle → right-click → View Page Source → search "channelId"
-const YT_CHANNELS = [
-  { name: 'Card Collector 2',  id: 'UCbUwX0sho_2c9AweeyA8DlA' },
-  { name: 'Roth Cards',        id: 'UCDZl-2hTjbE_6nCNLkfqfxA' },
-{ name: "Spitballin' Cards", id: 'UCncldJMnwJNsxI-RFNXolGQ' },
-];
 
-async function initYouTubeSidebar() {
-  const container = document.getElementById('yt-sidebar');
-  if (!container) return;
-
-  const results = await Promise.allSettled(YT_CHANNELS.map(ch => fetchYTChannel(ch)));
-
-  container.innerHTML = results.map((r, i) => {
-    if (r.status !== 'fulfilled') {
-      return `
-        <div class="yt-channel-card">
-          <div class="yt-channel-name">${YT_CHANNELS[i].name}</div>
-          <div class="yt-video-date" style="color:var(--accent-red);">Unavailable</div>
-        </div>`;
-    }
-    const { name, title, link, thumb, date } = r.value;
-    const dateStr = date
-      ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-      : '';
-    return `
-      <div class="yt-channel-card">
-        <div class="yt-channel-name">${name}</div>
-        <a class="yt-card-link" href="${link}" target="_blank" rel="noopener noreferrer">
-          ${thumb ? `<img class="yt-thumb" src="${thumb}" alt="" loading="lazy">` : ''}
-          <div class="yt-video-title">${title}</div>
-          <div class="yt-video-date">${dateStr}</div>
-        </a>
-      </div>`;
-  }).join('');
-}
-
-const INVIDIOUS_INSTANCES = [
-  'https://inv.riverside.rocks',
-  'https://invidious.fdn.fr',
-  'https://yt.cdaut.de',
-];
-
-async function fetchYTChannel(ch) {
-  // Try each Invidious instance — public CORS-enabled JSON API, no proxy needed
-  for (const host of INVIDIOUS_INSTANCES) {
-    try {
-      const r = await fetch(`${host}/api/v1/channels/${ch.id}/videos?page=1&sort_by=newest`, { signal: AbortSignal.timeout(6000) });
-      if (!r.ok) continue;
-      const data = await r.json();
-      const video = data.videos?.[0];
-      if (!video?.videoId) continue;
-      return {
-        name: ch.name,
-        title: video.title || '',
-        link: `https://www.youtube.com/watch?v=${video.videoId}`,
-        thumb: `https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`,
-        date: video.published ? new Date(video.published * 1000) : null,
-      };
-    } catch {}
-  }
-  throw new Error('all instances failed');
-}
