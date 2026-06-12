@@ -1155,3 +1155,196 @@ tbody td.text-col {
 .ml-auto {
   margin-left: auto;
 }
+
+/* ═══════════════════════════════════════════
+   LIQUID GLASS THEME (site-wide)
+   ═══════════════════════════════════════════ */
+
+/* Glass tokens — light (cream) theme */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.48);
+  --glass-bg-strong: rgba(255, 255, 255, 0.62);
+  --glass-border: rgba(255, 255, 255, 0.65);
+  --glass-edge: rgba(26, 18, 9, 0.08);
+  --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.12);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  --glass-blur: blur(18px) saturate(1.5);
+}
+[data-theme="dark"] {
+  --glass-bg: rgba(22, 24, 34, 0.45);
+  --glass-bg-strong: rgba(28, 30, 42, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-edge: rgba(255, 255, 255, 0.06);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --glass-blur: blur(18px) saturate(1.4);
+}
+
+/* Aurora backdrop — the color the glass refracts */
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+body::before {
+  background:
+    radial-gradient(ellipse 60% 50% at 12% 8%,  rgba(74, 158, 255, 0.22), transparent 60%),
+    radial-gradient(ellipse 50% 45% at 88% 18%, rgba(107, 63, 160, 0.18), transparent 60%),
+    radial-gradient(ellipse 55% 50% at 50% 95%, rgba(0, 208, 132, 0.14), transparent 60%),
+    radial-gradient(ellipse 40% 35% at 75% 70%, rgba(245, 166, 35, 0.10), transparent 60%);
+  animation: aurora-drift 24s ease-in-out infinite alternate;
+}
+body::after {
+  background: radial-gradient(ellipse 45% 40% at 30% 55%, rgba(193, 18, 31, 0.07), transparent 65%);
+  animation: aurora-drift 30s ease-in-out infinite alternate-reverse;
+}
+@keyframes aurora-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(2.5%, 1.5%, 0) scale(1.06); }
+  100% { transform: translate3d(-2%, -1%, 0) scale(1.02); }
+}
+@media (prefers-reduced-motion: reduce) {
+  body::before, body::after { animation: none; }
+}
+
+/* Frosted navbar */
+.navbar {
+  background: var(--glass-bg-strong);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+.navbar .btn,
+.navbar .btn-icon {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+.navbar .btn:hover,
+.navbar .btn-icon:hover {
+  background: var(--glass-bg-strong);
+  color: var(--text-primary);
+}
+
+/* Shared glass panel recipe */
+.stats-bar,
+.table-wrapper,
+.metric-card,
+.chart-card,
+#search-input,
+.toolbar select,
+.toolbar .btn {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-highlight);
+}
+
+.metric-card,
+.chart-card {
+  border-radius: 16px;
+}
+
+/* Search bar — pill of glass */
+#search-input {
+  width: 100%;
+  padding: 10px 12px 10px 38px;
+  font-size: 15px;
+  color: var(--text-primary);
+  border-radius: 14px;
+  outline: none;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+}
+#search-input:focus {
+  background: var(--glass-bg-strong);
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 4px rgba(74, 158, 255, 0.15), var(--glass-shadow), var(--glass-highlight);
+}
+
+/* Toolbar controls */
+.toolbar select {
+  border-radius: 10px;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+.toolbar select:hover, .toolbar select:focus {
+  background: var(--glass-bg-strong);
+}
+.toolbar .btn {
+  border-radius: 10px;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.toolbar .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 36px rgba(31, 38, 135, 0.18), var(--glass-highlight);
+}
+.toolbar .btn:active { transform: translateY(0); }
+.toolbar .btn-primary {
+  background: linear-gradient(135deg, rgba(74, 158, 255, 0.85), rgba(29, 53, 87, 0.9));
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #fff;
+}
+.toolbar .btn-success {
+  background: linear-gradient(135deg, rgba(0, 208, 132, 0.85), rgba(45, 106, 79, 0.9));
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #fff;
+}
+
+/* Chart filter toggles */
+.chart-toggle {
+  border-radius: 8px;
+}
+
+/* Stats bar — floating glass slab */
+.stats-bar {
+  border-radius: 16px;
+  overflow: hidden;
+}
+.stat-item { border-right-color: var(--glass-edge); }
+
+/* Table — sheet of glass */
+.table-wrapper {
+  border-radius: 16px;
+}
+thead th {
+  background: var(--glass-bg-strong);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--glass-border);
+}
+tbody tr { border-bottom-color: var(--glass-edge); }
+tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.10); }
+[data-theme="dark"] tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.025); }
+tbody tr:hover { background: rgba(74, 158, 255, 0.14); }
+.pagination {
+  background: var(--glass-bg-strong);
+  border-top: 1px solid var(--glass-edge);
+}
+
+/* Modals — heavy frosted glass */
+.modal-overlay {
+  background: rgba(10, 10, 14, 0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.modal {
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(28px) saturate(1.5);
+  -webkit-backdrop-filter: blur(28px) saturate(1.5);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35), var(--glass-highlight);
+  overflow: hidden;
+}
+.modal-header, .modal-footer { background: transparent; border-color: var(--glass-edge); }
+
+/* News list — soften dividers on glass */
+.news-item {
+  border-bottom-color: var(--glass-edge);
+  border-right-color: var(--glass-edge);
+}

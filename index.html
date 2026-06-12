@@ -16,8 +16,10 @@
       top: var(--nav-height);
       left: 0; right: 0;
       height: 28px;
-      background: var(--bg-tertiary);
-      border-bottom: 1px solid var(--border);
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-bottom: 1px solid var(--glass-border);
       z-index: 999;
       overflow: hidden;
       display: flex;
@@ -65,8 +67,11 @@
 
     /* ── LEFT LINKS COLUMN ── */
     .dash-links-col {
-      border-right: 1px solid var(--border);
-      background: var(--bg-secondary);
+      border-right: 1px solid var(--glass-border);
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      box-shadow: var(--glass-shadow);
       display: flex;
       flex-direction: column;
       padding: 16px 14px;
@@ -92,6 +97,15 @@
       width: 100%;
       white-space: normal;
       word-break: break-word;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      box-shadow: var(--glass-highlight);
+      transition: background 0.2s ease, transform 0.15s ease;
+    }
+    .dash-links-col a.btn:hover {
+      background: var(--glass-bg-strong);
+      transform: translateY(-1px);
     }
 
     /* ── MAIN CONTENT ── */
@@ -109,26 +123,26 @@
       gap: 14px;
     }
 
-    /* Metric strip */
+    /* Metric strip — floating glass cards */
     .dash-metrics {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 0;
-      border: 1px solid var(--border);
+      gap: 12px;
     }
     .metric-card {
       padding: 20px 24px;
-      border-right: 1px solid var(--border);
-      background: var(--bg-secondary);
     }
-    .metric-card:last-child { border-right: none; }
     .metric-card .label { display: block; margin-bottom: 8px; }
     .metric-value { font-size: 28px; }
 
     /* Exposure */
     .dash-exposure {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      box-shadow: var(--glass-shadow), var(--glass-highlight);
       padding: 14px 20px;
     }
     .exposure-header {
@@ -167,15 +181,20 @@
     /* Bottom half: news */
     .dash-news {
       flex: 1;
-      border: 1px solid var(--border);
-      background: var(--bg-secondary);
+      border: 1px solid var(--glass-border);
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-radius: 16px;
+      box-shadow: var(--glass-shadow), var(--glass-highlight);
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       min-height: 420px;
     }
     .dash-news-header {
       padding: 10px 16px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--glass-edge);
       display: flex;
       align-items: center;
       justify-content: space-between;
