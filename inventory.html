@@ -8,7 +8,99 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <style>
-    .page-content { max-width: none; padding: 24px 20px; }
+    .inv-page {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      min-height: calc(100vh - var(--nav-height));
+    }
+    .inv-links-col {
+      border-right: 1px solid var(--glass-border);
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      box-shadow: var(--glass-shadow);
+      display: flex;
+      flex-direction: column;
+      padding: 16px 14px;
+      gap: 6px;
+      position: sticky;
+      top: var(--nav-height);
+      height: calc(100vh - var(--nav-height));
+      overflow-y: auto;
+      align-self: start;
+    }
+    .inv-links-col .links-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+    .inv-links-col a.btn {
+      font-size: 12px;
+      padding: 8px 10px;
+      justify-content: flex-start;
+      width: 100%;
+      white-space: normal;
+      word-break: break-word;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      box-shadow: var(--glass-highlight);
+      transition: background 0.2s ease, transform 0.15s ease;
+    }
+    .inv-links-col a.btn:hover {
+      background: var(--glass-bg-strong);
+      transform: translateY(-1px);
+    }
+    .rp-divider {
+      height: 1px;
+      background: var(--glass-border);
+      margin: 8px 0 4px;
+      flex-shrink: 0;
+    }
+    .rp-item {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      box-shadow: var(--glass-highlight);
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease;
+      flex-shrink: 0;
+    }
+    .rp-item:hover {
+      background: var(--glass-bg-strong);
+      transform: translateY(-1px);
+    }
+    .rp-player {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-primary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .rp-detail {
+      font-size: 10px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .rp-price {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-blue);
+      margin-top: 3px;
+    }
+    .inv-main {
+      max-width: none;
+      padding: 24px 20px;
+    }
   </style>
 </head>
 <body>
@@ -39,124 +131,155 @@
     <input type="file" id="csv-file-input" accept=".csv" style="display:none" aria-hidden="true">
   </nav>
 
-  <!-- PAGE CONTENT -->
-  <main class="page-content">
-    <div style="margin-bottom:16px;">
-      <h1 class="section-header" style="border:none;margin:0;padding:0;">Inventory</h1>
-    </div>
+  <!-- PAGE -->
+  <div class="inv-page">
 
-    <!-- Player search bar -->
-    <div style="margin-bottom:12px;position:relative;">
-      <i class="ti ti-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-secondary);font-size:16px;pointer-events:none;"></i>
-      <input
-        type="text"
-        id="search-input"
-        placeholder="Search player name..."
-        aria-label="Search by player name"
-        autocomplete="off"
-      >
-    </div>
+    <!-- Left sidebar -->
+    <nav class="inv-links-col" aria-label="Quick links and recent purchases">
+      <span class="links-label">Quick Links</span>
+      <a href="https://www.ebay.com" target="_blank" rel="noopener noreferrer" class="btn">
+        <i class="ti ti-external-link"></i> eBay
+      </a>
+      <a href="https://www.alt.xyz" target="_blank" rel="noopener noreferrer" class="btn">
+        <i class="ti ti-external-link"></i> ALT
+      </a>
+      <a href="https://baseballsavant.mlb.com/" target="_blank" rel="noopener noreferrer" class="btn">
+        <i class="ti ti-external-link"></i> Baseball Savant
+      </a>
+      <a href="https://prospectsavant.com/leaders" target="_blank" rel="noopener noreferrer" class="btn">
+        <i class="ti ti-external-link"></i> Prospect Savant
+      </a>
+      <a href="https://www.marketmoversapp.com/" target="_blank" rel="noopener noreferrer" class="btn">
+        <i class="ti ti-external-link"></i> Market Movers
+      </a>
 
-    <!-- Toolbar -->
-    <div class="toolbar" role="search" aria-label="Inventory filters">
-      <select id="sport-filter" aria-label="Filter by sport">
-        <option value="All">All Sports</option>
-        <option value="MLB">MLB</option>
-        <option value="NBA">NBA</option>
-        <option value="NFL">NFL</option>
-        <option value="NHL">NHL</option>
-        <option value="Other">Other</option>
-      </select>
-      <select id="status-filter" aria-label="Filter by status">
-        <option value="All">All Status</option>
-        <option value="In Storage">In Storage</option>
-        <option value="Posted$">Posted$</option>
-        <option value="Sold">Sold</option>
-      </select>
-      <select id="sort-select" aria-label="Sort cards">
-        <option value="purchaseDate:desc">Date Added (Newest)</option>
-        <option value="purchaseDate:asc">Date Added (Oldest)</option>
-        <option value="player:asc">Player Name (A–Z)</option>
-        <option value="player:desc">Player Name (Z–A)</option>
-        <option value="purchasePrice:asc">Purchase Price (Low)</option>
-        <option value="purchasePrice:desc">Purchase Price (High)</option>
-        <option value="estimatedValue:asc">Est. Value (Low)</option>
-        <option value="estimatedValue:desc">Est. Value (High)</option>
-        <option value="pl:asc">P&amp;L (Low)</option>
-        <option value="pl:desc">P&amp;L (High)</option>
-      </select>
-      <button class="btn btn-primary" id="add-card-btn" aria-label="Add new card">
-        <i class="ti ti-plus"></i> Add Card
-      </button>
-      <button class="btn btn-success" id="add-cash-btn" aria-label="Add cash deposit">
-        <i class="ti ti-cash"></i> + Cash
-      </button>
-    </div>
+      <div class="rp-divider"></div>
+      <span class="links-label">Recent Purchases</span>
+      <div id="recent-purchases">
+        <span style="color:var(--text-secondary);font-size:11px;">No data loaded</span>
+      </div>
+    </nav>
 
-    <!-- Stats bar -->
-    <div class="stats-bar" role="region" aria-label="Inventory statistics">
-      <div class="stat-item">
-        <span class="stat-label">Total Cards</span>
-        <span class="stat-value" id="stat-total">0</span>
+    <!-- Main content -->
+    <main class="inv-main">
+      <div style="margin-bottom:16px;">
+        <h1 class="section-header" style="border:none;margin:0;padding:0;">Inventory</h1>
       </div>
-      <div class="stat-item">
-        <span class="stat-label">In Storage</span>
-        <span class="stat-value text-blue" id="stat-storage">0</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Sold</span>
-        <span class="stat-value text-muted" id="stat-sold">0</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Total Invested</span>
-        <span class="stat-value mono" id="stat-invested">$0.00</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Current Value</span>
-        <span class="stat-value mono" id="stat-value">$0.00</span>
-      </div>
-    </div>
 
-    <!-- Table -->
-    <div class="table-wrapper">
-      <table aria-label="Card inventory">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th data-sort="player" style="cursor:pointer;" title="Click to sort">Player <i class="ti ti-selector" style="font-size:10px;opacity:0.5;"></i></th>
-            <th data-sort="year" style="cursor:pointer;" title="Click to sort">Year <i class="ti ti-selector" style="font-size:10px;opacity:0.5;"></i></th>
-            <th data-sort="set" style="cursor:pointer;" title="Click to sort">Set <i class="ti ti-selector" style="font-size:10px;opacity:0.5;"></i></th>
-            <th data-sort="cardNumber" style="cursor:pointer;" title="Click to sort">Card # <i class="ti ti-selector" style="font-size:10px;opacity:0.5;"></i></th>
-            <th data-sort="sport" style="cursor:pointer;" title="Click to sort">Sport <i class="ti ti-selector" style="font-size:10px;opacity:0.5;"></i></th>
-            <th data-sort="type" style="cursor:pointer;" title="Click to sort">Type <i class="ti ti-selector" style="font-size:10px;opacity:0.5;"></i></th>
-            <th data-sort="grade" style="cursor:pointer;" title="Click to sort">Grade <i class="ti ti-selector" style="font-size:10px;opacity:0.5;"></i></th>
-            <th>Condition</th>
-            <th data-sort="purchasePrice" style="cursor:pointer;" title="Click to sort">Bought <i class="ti ti-selector" style="font-size:10px;opacity:0.5;"></i></th>
-            <th data-sort="purchaseDate" style="cursor:pointer;" title="Click to sort">Buy Date <i class="ti ti-selector" style="font-size:10px;opacity:0.5;"></i></th>
-            <th>Source</th>
-            <th data-sort="estimatedValue" style="cursor:pointer;" title="Click to sort">Est. Value <i class="ti ti-selector" style="font-size:10px;opacity:0.5;"></i></th>
-            <th>Sale Price</th>
-            <th>Sale Date</th>
-            <th>Platform</th>
-            <th data-sort="pl" style="cursor:pointer;" title="Click to sort">P&amp;L <i class="ti ti-selector" style="font-size:10px;opacity:0.5;"></i></th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="inventory-tbody">
-          <tr class="no-data-row">
-            <td colspan="19">No data loaded. Import a CSV to get started.</td>
-          </tr>
-        </tbody>
-      </table>
-      <!-- Pagination -->
-      <div class="pagination" aria-label="Table pagination">
-        <span class="pagination-info" id="pagination-info">0 records</span>
-        <div class="pagination-controls" id="pagination-controls" role="navigation" aria-label="Page navigation"></div>
+      <!-- Player search bar -->
+      <div style="margin-bottom:12px;position:relative;">
+        <i class="ti ti-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-secondary);font-size:16px;pointer-events:none;"></i>
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Search player name..."
+          aria-label="Search by player name"
+          autocomplete="off"
+        >
       </div>
-    </div>
 
-  </main>
+      <!-- Toolbar -->
+      <div class="toolbar" role="search" aria-label="Inventory filters">
+        <select id="sport-filter" aria-label="Filter by sport">
+          <option value="All">All Sports</option>
+          <option value="MLB">MLB</option>
+          <option value="NBA">NBA</option>
+          <option value="NFL">NFL</option>
+          <option value="NHL">NHL</option>
+          <option value="Other">Other</option>
+        </select>
+        <select id="status-filter" aria-label="Filter by status">
+          <option value="All">All Status</option>
+          <option value="In Storage">In Storage</option>
+          <option value="Posted$">Posted$</option>
+          <option value="Sold">Sold</option>
+        </select>
+        <select id="sort-select" aria-label="Sort cards">
+          <option value="purchaseDate:desc">Date Added (Newest)</option>
+          <option value="purchaseDate:asc">Date Added (Oldest)</option>
+          <option value="player:asc">Player Name (A–Z)</option>
+          <option value="player:desc">Player Name (Z–A)</option>
+          <option value="purchasePrice:asc">Purchase Price (Low)</option>
+          <option value="purchasePrice:desc">Purchase Price (High)</option>
+          <option value="estimatedValue:asc">Est. Value (Low)</option>
+          <option value="estimatedValue:desc">Est. Value (High)</option>
+          <option value="pl:asc">P&amp;L (Low)</option>
+          <option value="pl:desc">P&amp;L (High)</option>
+        </select>
+        <button class="btn btn-primary" id="add-card-btn" aria-label="Add new card">
+          <i class="ti ti-plus"></i> Add Card
+        </button>
+        <button class="btn btn-success" id="add-cash-btn" aria-label="Add cash deposit">
+          <i class="ti ti-cash"></i> + Cash
+        </button>
+      </div>
+
+      <!-- Stats bar -->
+      <div class="stats-bar" role="region" aria-label="Inventory statistics">
+        <div class="stat-item">
+          <span class="stat-label">Total Cards</span>
+          <span class="stat-value" id="stat-total">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">In Storage</span>
+          <span class="stat-value text-blue" id="stat-storage">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Sold</span>
+          <span class="stat-value text-muted" id="stat-sold">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Total Invested</span>
+          <span class="stat-value mono" id="stat-invested">$0.00</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Current Value</span>
+          <span class="stat-value mono" id="stat-value">$0.00</span>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrapper">
+        <table aria-label="Card inventory">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th data-sort="player" style="cursor:pointer;" title="Click to sort">Player <i class="ti ti-selector" style="font-size:10px;opacity:0.5;"></i></th>
+              <th data-sort="year" style="cursor:pointer;" title="Click to sort">Year <i class="ti ti-selector" style="font-size:10px;opacity:0.5;"></i></th>
+              <th data-sort="set" style="cursor:pointer;" title="Click to sort">Set <i class="ti ti-selector" style="font-size:10px;opacity:0.5;"></i></th>
+              <th data-sort="cardNumber" style="cursor:pointer;" title="Click to sort">Card # <i class="ti ti-selector" style="font-size:10px;opacity:0.5;"></i></th>
+              <th data-sort="sport" style="cursor:pointer;" title="Click to sort">Sport <i class="ti ti-selector" style="font-size:10px;opacity:0.5;"></i></th>
+              <th data-sort="type" style="cursor:pointer;" title="Click to sort">Type <i class="ti ti-selector" style="font-size:10px;opacity:0.5;"></i></th>
+              <th data-sort="grade" style="cursor:pointer;" title="Click to sort">Grade <i class="ti ti-selector" style="font-size:10px;opacity:0.5;"></i></th>
+              <th>Condition</th>
+              <th data-sort="purchasePrice" style="cursor:pointer;" title="Click to sort">Bought <i class="ti ti-selector" style="font-size:10px;opacity:0.5;"></i></th>
+              <th data-sort="purchaseDate" style="cursor:pointer;" title="Click to sort">Buy Date <i class="ti ti-selector" style="font-size:10px;opacity:0.5;"></i></th>
+              <th>Source</th>
+              <th data-sort="estimatedValue" style="cursor:pointer;" title="Click to sort">Est. Value <i class="ti ti-selector" style="font-size:10px;opacity:0.5;"></i></th>
+              <th>Sale Price</th>
+              <th>Sale Date</th>
+              <th>Platform</th>
+              <th data-sort="pl" style="cursor:pointer;" title="Click to sort">P&amp;L <i class="ti ti-selector" style="font-size:10px;opacity:0.5;"></i></th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="inventory-tbody">
+            <tr class="no-data-row">
+              <td colspan="19">No data loaded. Import a CSV to get started.</td>
+            </tr>
+          </tbody>
+        </table>
+        <!-- Pagination -->
+        <div class="pagination" aria-label="Table pagination">
+          <span class="pagination-info" id="pagination-info">0 records</span>
+          <div class="pagination-controls" id="pagination-controls" role="navigation" aria-label="Page navigation"></div>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
 
   <script src="js/data.js"></script>
   <script src="js/inventory.js"></script>
