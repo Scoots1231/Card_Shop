@@ -13,11 +13,13 @@ document.addEventListener('DOMContentLoaded', () => {
   startClock();
   renderPortfolioStrip();
   renderExposure();
+  renderRecentPurchases();
   initTicker();
   initNewsPanel();
   document.addEventListener('data-loaded', () => {
     renderPortfolioStrip();
     renderExposure();
+    renderRecentPurchases();
   });
 });
 
@@ -220,4 +222,38 @@ async function fetchNews() {
   }
 }
 
+// ===== RECENT PURCHASES SIDEBAR =====
+function renderRecentPurchases() {
+  const container = document.getElementById('recent-purchases');
+  if (!container) return;
 
+  const recent = window.AppData.cards
+    .filter(c => !isCashDeposit(c))
+    .sort((a, b) => (b.purchaseDate || '').localeCompare(a.purchaseDate || ''))
+    .slice(0, 5);
+
+  if (recent.length === 0) {
+    container.innerHTML = '<span style="color:var(--text-secondary);font-size:11px;">No data loaded</span>';
+    return;
+  }
+
+  container.innerHTML = recent.map(card => {
+    const dateStr = card.purchaseDate
+      ? new Date(card.purchaseDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })
+      : '';
+    const setShort = card.set && card.set.length > 15 ? card.set.slice(0, 15) + '…' : (card.set || '');
+    const detail = [card.year, setShort].filter(Boolean).join(' ');
+    return `
+      <div class="rp-item" title="${escHtml(card.player)}${card.set ? ' — ' + escHtml(card.set) : ''}">
+        <div class="rp-player">${escHtml(card.player)}</div>
+        ${detail ? `<div class="rp-detail">${escHtml(detail)}</div>` : ''}
+        <div class="rp-price">${formatCurrency(card.purchasePrice)}${dateStr ? ' · ' + dateStr : ''}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function escHtml(val) {
+  if (!val) return '';
+  return String(val).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}

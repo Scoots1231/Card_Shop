@@ -138,7 +138,6 @@ function getFilteredCards() {
 function render() {
   renderStatsBar();
   renderTable();
-  renderRecentPurchases();
 }
 
 function renderStatsBar() {
@@ -744,43 +743,6 @@ function openNewsSearch(cardId) {
   if (!card || !card.player) return;
   const url = `https://www.google.com/search?q=${encodeURIComponent(card.player + ' sports news')}&tbm=nws`;
   window.open(url, '_blank', 'noopener,noreferrer');
-}
-
-// ===== RECENT PURCHASES SIDEBAR =====
-function renderRecentPurchases() {
-  const container = document.getElementById('recent-purchases');
-  if (!container) return;
-
-  const recent = window.AppData.cards
-    .filter(c => !isCashDeposit(c))
-    .sort((a, b) => (b.purchaseDate || '').localeCompare(a.purchaseDate || ''))
-    .slice(0, 5);
-
-  if (recent.length === 0) {
-    container.innerHTML = '<span style="color:var(--text-secondary);font-size:11px;">No purchases yet</span>';
-    return;
-  }
-
-  container.innerHTML = recent.map(card => {
-    const dateStr = card.purchaseDate
-      ? new Date(card.purchaseDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })
-      : '';
-    const detail = [card.year, card.set].filter(Boolean).join(' ');
-    return `
-      <div class="rp-item" data-id="${card.id}" title="${esc(card.player)}${detail ? ' — ' + esc(detail) : ''}">
-        <div class="rp-player">${esc(card.player)}</div>
-        ${detail ? `<div class="rp-detail">${esc(detail)}</div>` : ''}
-        <div class="rp-price">${formatCurrency(card.purchasePrice)}${dateStr ? ' · ' + dateStr : ''}</div>
-      </div>
-    `;
-  }).join('');
-
-  container.querySelectorAll('.rp-item').forEach(item => {
-    item.addEventListener('click', () => {
-      const card = window.AppData.cards.find(c => c.id === item.dataset.id);
-      if (card) openModal(card);
-    });
-  });
 }
 
 // ===== CASH DEPOSIT MODAL =====
