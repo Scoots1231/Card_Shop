@@ -26,7 +26,20 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ===== SCORE TICKER =====
+let allTickerItems = [];
+let activeSportFilter = 'ALL';
+
 async function initTicker() {
+  // Wire up filter buttons
+  document.querySelectorAll('.ticker-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeSportFilter = btn.dataset.sport;
+      document.querySelectorAll('.ticker-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderTickerItems();
+    });
+  });
+
   await fetchTickerScores();
   setInterval(fetchTickerScores, 60000);
 }
@@ -66,11 +79,22 @@ async function fetchTickerScores() {
     })
   );
 
+  allTickerItems = items;
+  renderTickerItems();
+}
+
+function renderTickerItems() {
   const track = document.getElementById('ticker-track');
   if (!track) return;
 
+  const items = activeSportFilter === 'ALL'
+    ? allTickerItems
+    : allTickerItems.filter(g => g.sport === activeSportFilter);
+
   if (items.length === 0) {
-    track.innerHTML = '<span class="ticker-item" style="opacity:0.5;">No games today</span>';
+    const msg = allTickerItems.length === 0 ? 'No games today' : `No ${activeSportFilter} games today`;
+    track.innerHTML = `<span class="ticker-item" style="opacity:0.5;">${msg}</span>`;
+    track.style.animation = 'none';
     return;
   }
 
@@ -84,6 +108,7 @@ async function fetchTickerScores() {
     </span>
   `).join('');
 
+  track.style.animation = '';
   // Duplicate for seamless loop
   track.innerHTML = html + html;
 }
