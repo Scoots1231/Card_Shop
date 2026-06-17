@@ -161,13 +161,15 @@ function renderExposure() {
   const sports = ['MLB', 'NBA', 'NFL', 'NHL', 'Other'];
 
   const costs = {};
+  const unsoldCounts = {};
   let totalCost = 0;
-  sports.forEach(s => { costs[s] = 0; });
+  sports.forEach(s => { costs[s] = 0; unsoldCounts[s] = 0; });
 
   for (const card of cards) {
     const sport = sports.includes(card.sport) ? card.sport : 'Other';
     costs[sport] += card.purchasePrice || 0;
     totalCost += card.purchasePrice || 0;
+    if (card.status !== 'Sold') unsoldCounts[sport]++;
   }
 
   if (totalEl) {
@@ -183,10 +185,11 @@ function renderExposure() {
     const cost = costs[sport];
     const pct = totalCost > 0 ? (cost / totalCost) * 100 : 0;
     const color = SPORT_COLORS[sport];
+    const count = unsoldCounts[sport];
     const divider = i < sports.length - 1 ? '<div class="exposure-divider"></div>' : '';
     return `
       <div class="exposure-sport">
-        <span class="exposure-sport-label">${sport}</span>
+        <span class="exposure-sport-label">${sport} ${count > 0 ? `<span style="opacity:0.6;font-weight:400;">(${count})</span>` : ''}</span>
         <div class="exposure-bar-track">
           <div class="exposure-bar-fill" style="width:${pct.toFixed(1)}%;background:${color};"></div>
         </div>
