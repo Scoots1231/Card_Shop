@@ -3,15 +3,7 @@
 let sportChart = null;
 let plSportChart = null;
 let plTimeChart = null;
-
-// Read theme colors once — used by both chart functions
-function getThemeColors() {
-  const style = getComputedStyle(document.documentElement);
-  return {
-    green: style.getPropertyValue('--accent-green').trim() || '#00d084',
-    red:   style.getPropertyValue('--accent-red').trim()   || '#ff4d4d',
-  };
-}
+// getThemeColors() lives in data.js and is shared across pages.
 
 let sportFilter = 'all'; // 'all' | 'storage' | 'sold'
 let plMode = 'combined'; // 'realized' | 'unrealized' | 'combined'
@@ -20,6 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initNavbar('analytics');
   renderAll();
   document.addEventListener('data-loaded', renderAll);
+  // Re-paint charts with the new palette when the theme is toggled.
+  document.addEventListener('theme-changed', renderAll);
   bindToggles();
 });
 
@@ -62,6 +56,8 @@ function renderSportDonut() {
     return;
   }
 
+  const colors = getThemeColors();
+
   sportChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
@@ -69,7 +65,7 @@ function renderSportDonut() {
       datasets: [{
         data: counts,
         backgroundColor: sports.map(s => SPORT_COLORS[s]),
-        borderColor: 'var(--bg-secondary)',
+        borderColor: colors.bg,
         borderWidth: 2,
         hoverOffset: 4,
       }],
@@ -96,10 +92,10 @@ function renderSportDonut() {
         c.save();
         c.textAlign = 'center';
         c.textBaseline = 'middle';
-        c.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim() || '#e8e8e8';
+        c.fillStyle = colors.text;
         c.font = 'bold 28px IBM Plex Mono, monospace';
         c.fillText(total, x, y - 10);
-        c.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() || '#888';
+        c.fillStyle = colors.textSecondary;
         c.font = '11px Inter, sans-serif';
         c.fillText('CARDS', x, y + 14);
         c.restore();
@@ -148,7 +144,8 @@ function renderPLSportChart() {
 
   if (plSportChart) plSportChart.destroy();
 
-  const { green: accentGreen, red: accentRed } = getThemeColors();
+  const colors = getThemeColors();
+  const { green: accentGreen, red: accentRed } = colors;
 
   plSportChart = new Chart(ctx, {
     type: 'bar',
@@ -175,16 +172,16 @@ function renderPLSportChart() {
       },
       scales: {
         x: {
-          grid: { color: 'rgba(255,255,255,0.05)' },
+          grid: { color: colors.grid },
           ticks: {
-            color: '#888',
+            color: colors.textSecondary,
             font: { family: 'IBM Plex Mono', size: 11 },
             callback: v => formatCurrency(v),
           },
         },
         y: {
           grid: { display: false },
-          ticks: { color: '#888', font: { size: 12 } },
+          ticks: { color: colors.textSecondary, font: { size: 12 } },
         },
       },
     },
@@ -248,7 +245,8 @@ function renderPLTimeChart() {
     return;
   }
 
-  const { green: accentGreen, red: accentRed } = getThemeColors();
+  const colors = getThemeColors();
+  const { green: accentGreen, red: accentRed } = colors;
   const lastVal = points[points.length - 1]?.y || 0;
   const lineColor = lastVal >= 0 ? accentGreen : accentRed;
 
@@ -282,13 +280,13 @@ function renderPLTimeChart() {
       scales: {
         x: {
           type: 'category',
-          grid: { color: 'rgba(255,255,255,0.04)' },
-          ticks: { color: '#888', font: { family: 'IBM Plex Mono', size: 10 }, maxTicksLimit: 12 },
+          grid: { color: colors.grid },
+          ticks: { color: colors.textSecondary, font: { family: 'IBM Plex Mono', size: 10 }, maxTicksLimit: 12 },
         },
         y: {
-          grid: { color: 'rgba(255,255,255,0.04)' },
+          grid: { color: colors.grid },
           ticks: {
-            color: '#888',
+            color: colors.textSecondary,
             font: { family: 'IBM Plex Mono', size: 11 },
             callback: v => formatCurrency(v),
           },
@@ -329,10 +327,10 @@ function renderTopTable(tbodyId, cards, isWinner) {
     return `
       <tr>
         <td>${i + 1}</td>
-        <td class="text-col">${card.player}</td>
-        <td>${card.year}</td>
-        <td class="text-col">${card.set}</td>
-        <td>${card.type}</td>
+        <td class="text-col">${escHtml(card.player)}</td>
+        <td>${escHtml(card.year)}</td>
+        <td class="text-col">${escHtml(card.set)}</td>
+        <td>${escHtml(card.type)}</td>
         <td>${formatCurrency(card.purchasePrice)}</td>
         <td>${valueSold}</td>
         <td class="${cls}">${plStr}</td>

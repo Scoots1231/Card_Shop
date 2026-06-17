@@ -100,11 +100,11 @@ function renderTickerItems() {
 
   const html = items.map(g => `
     <span class="ticker-item">
-      <span class="ticker-sport">${g.sport}</span>
+      <span class="ticker-sport">${escHtml(g.sport)}</span>
       ${g.isLive ? '<span class="ticker-live-dot"></span>' : ''}
-      <span class="ticker-teams">${g.away} vs ${g.home}</span>
-      ${g.awayScore !== '' ? `<span class="ticker-score">${g.awayScore}–${g.homeScore}</span>` : ''}
-      <span class="ticker-status">${g.status}</span>
+      <span class="ticker-teams">${escHtml(g.away)} vs ${escHtml(g.home)}</span>
+      ${g.awayScore !== '' ? `<span class="ticker-score">${escHtml(g.awayScore)}–${escHtml(g.homeScore)}</span>` : ''}
+      <span class="ticker-status">${escHtml(g.status)}</span>
     </span>
   `).join('');
 
@@ -114,13 +114,16 @@ function renderTickerItems() {
 }
 
 // ===== LIVE CLOCK =====
+const CLOCK_DAYS = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+const CLOCK_MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+
 function startClock() {
   const el = document.getElementById('live-clock');
   if (!el) return;
   const update = () => {
     const now = new Date();
-    const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
-    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    const days = CLOCK_DAYS;
+    const months = CLOCK_MONTHS;
     const day = days[now.getDay()];
     const date = `${months[now.getMonth()]} ${String(now.getDate()).padStart(2, '0')}, ${now.getFullYear()}`;
     const time = now.toLocaleTimeString('en-US', { hour12: false });
@@ -131,23 +134,26 @@ function startClock() {
 }
 
 // ===== PORTFOLIO STRIP =====
+// Remember the last rendered values so count-ups animate from where they were.
+const _prevMetrics = { cash: 0, cards: 0, value: 0, pl: 0 };
+
 function renderPortfolioStrip() {
   const stats = getPortfolioStats(window.AppData.cards);
 
-  const cashEl = document.getElementById('metric-cash');
-  if (cashEl) cashEl.textContent = formatCurrency(stats.cash);
-
-  const cardsEl = document.getElementById('metric-cards');
-  if (cardsEl) cardsEl.textContent = stats.totalCards;
-
-  const valueEl = document.getElementById('metric-value');
-  if (valueEl) valueEl.textContent = formatCurrency(stats.portfolioValue);
+  animateValue(document.getElementById('metric-cash'), _prevMetrics.cash, stats.cash, 600, formatCurrency);
+  animateValue(document.getElementById('metric-cards'), _prevMetrics.cards, stats.totalCards, 600, v => Math.round(v).toLocaleString('en-US'));
+  animateValue(document.getElementById('metric-value'), _prevMetrics.value, stats.portfolioValue, 600, formatCurrency);
 
   const plEl = document.getElementById('metric-pl');
   if (plEl) {
-    plEl.textContent = formatPL(stats.realizedPL);
+    animateValue(plEl, _prevMetrics.pl, stats.realizedPL, 600, formatPL);
     plEl.className = 'metric-value mono ' + (stats.realizedPL >= 0 ? 'text-green' : 'text-red');
   }
+
+  _prevMetrics.cash = stats.cash;
+  _prevMetrics.cards = stats.totalCards;
+  _prevMetrics.value = stats.portfolioValue;
+  _prevMetrics.pl = stats.realizedPL;
 }
 
 // ===== EXPOSURE BREAKDOWN =====
@@ -203,8 +209,21 @@ function renderExposure() {
 
 // ===== NEWS PANEL =====
 function initNewsPanel() {
+  renderNewsSkeleton();
   fetchNews();
   setInterval(fetchNews, 300000);
+}
+
+function renderNewsSkeleton() {
+  const container = document.getElementById('news-list');
+  if (!container) return;
+  container.innerHTML = Array.from({ length: 9 }).map(() => `
+    <div class="news-item">
+      <div class="skeleton skeleton-line" style="width:92%"></div>
+      <div class="skeleton skeleton-line" style="width:70%"></div>
+      <div class="skeleton skeleton-line short" style="width:34%"></div>
+    </div>
+  `).join('');
 }
 
 const NEWS_ENDPOINTS = [
@@ -236,14 +255,14 @@ async function fetchNews() {
     if (articles.length === 0) throw new Error('No articles');
 
     container.innerHTML = articles.map(article => {
-      const title = article.headline || '';
-      const link = article.links?.web?.href || '#';
+      const title = escHtml(article.headline || '');
+      const link = escHtml(article.links?.web?.href || '#');
       const pubDate = article.published || '';
       const date = pubDate ? new Date(pubDate).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
       return `
         <div class="news-item">
           <a href="${link}" target="_blank" rel="noopener noreferrer">${title}</a>
-          <div class="news-meta">${article._sport}${date ? ' · ' + date : ''}</div>
+          <div class="news-meta">${escHtml(article._sport)}${date ? ' · ' + date : ''}</div>
         </div>
       `;
     }).join('');
@@ -315,9 +334,4 @@ function renderRecentSales() {
       </div>
     `;
   }).join('');
-}
-
-function escHtml(val) {
-  if (!val) return '';
-  return String(val).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }

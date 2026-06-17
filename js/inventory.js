@@ -29,10 +29,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ===== TOOLBAR =====
 function bindToolbar() {
-  document.getElementById('search-input')?.addEventListener('input', e => {
-    state.search = e.target.value.toLowerCase();
+  const runSearch = debounce(() => {
     state.page = 1;
     render();
+  }, 180);
+  document.getElementById('search-input')?.addEventListener('input', e => {
+    state.search = e.target.value.toLowerCase();
+    runSearch();
   });
 
   document.getElementById('sport-filter')?.addEventListener('change', e => {
@@ -221,20 +224,20 @@ function renderRow(card, rowNum) {
   return `
     <tr data-id="${card.id}" data-row="${rowNum}" data-status="${card.status}">
       <td>${rowNum}</td>
-      <td class="text-col">${card.player || ''}</td>
-      <td>${card.year || ''}</td>
-      <td class="text-col">${card.set || ''}</td>
-      <td>${card.cardNumber || ''}</td>
-      <td class="text-col">${card.sport || ''}</td>
-      <td>${card.type || ''}</td>
-      <td colspan="2">${condDisplay}</td>
+      <td class="text-col">${esc(card.player)}</td>
+      <td>${esc(card.year)}</td>
+      <td class="text-col">${esc(card.set)}</td>
+      <td>${esc(card.cardNumber)}</td>
+      <td class="text-col">${esc(card.sport)}</td>
+      <td>${esc(card.type)}</td>
+      <td colspan="2">${esc(condDisplay)}</td>
       <td>${card.purchasePrice ? formatCurrency(card.purchasePrice) : ''}</td>
-      <td>${card.purchaseDate || ''}</td>
-      <td class="text-col">${card.source || ''}</td>
+      <td>${esc(card.purchaseDate)}</td>
+      <td class="text-col">${esc(card.source)}</td>
       <td>${card.estimatedValue ? formatCurrency(card.estimatedValue) : ''}</td>
       <td>${card.salePrice ? formatCurrency(card.salePrice) : ''}</td>
-      <td>${card.saleDate || ''}</td>
-      <td class="text-col">${card.platform || ''}</td>
+      <td>${esc(card.saleDate)}</td>
+      <td class="text-col">${esc(card.platform)}</td>
       <td class="${plClass}">${plText}</td>
       <td>${statusBadge}</td>
       <td>
@@ -543,11 +546,6 @@ function conditionValue(card) {
   if (card.type === 'Graded' && card.grader && card.grade) return `${card.grader} ${card.grade}`;
   if (card.condition) return card.condition;
   return 'Raw';
-}
-
-function esc(val) {
-  if (val === null || val === undefined) return '';
-  return String(val).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function saveCard(existingId) {

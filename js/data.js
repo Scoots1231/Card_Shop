@@ -255,6 +255,7 @@ function toggleTheme() {
     localStorage.setItem('card_manager_theme', 'dark');
   }
   updateThemeIcon();
+  document.dispatchEvent(new CustomEvent('theme-changed'));
 }
 
 function updateThemeIcon() {
@@ -393,6 +394,63 @@ async function sendSlackNotification(text, webhookOverride) {
 function setText(id, val) {
   const el = document.getElementById(id);
   if (el) el.textContent = val;
+}
+
+// Escape user/API-supplied strings before injecting via innerHTML.
+function escHtml(val) {
+  if (val === null || val === undefined) return '';
+  return String(val)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+// Alias kept for existing call sites.
+const esc = escHtml;
+
+// Debounce — collapse rapid calls (e.g. search keystrokes) into one.
+function debounce(fn, wait = 200) {
+  let timer;
+  return function (...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), wait);
+  };
+}
+
+const prefersReducedMotion =
+  window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Count-up animation for a numeric element. `format` turns a number into display text.
+function animateValue(el, start, end, duration, format) {
+  if (!el) return;
+  if (prefersReducedMotion || start === end) {
+    el.textContent = format(end);
+    return;
+  }
+  const startTime = performance.now();
+  function tick(now) {
+    const t = Math.min((now - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+    el.textContent = format(start + (end - start) * eased);
+    if (t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+// Resolve the current theme's palette from CSS variables (shared by all charts).
+function getThemeColors() {
+  const s = getComputedStyle(document.documentElement);
+  const read = (name, fallback) => s.getPropertyValue(name).trim() || fallback;
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  return {
+    green: read('--accent-green', '#00d084'),
+    red: read('--accent-red', '#ff4d4d'),
+    text: read('--text-primary', '#1A1209'),
+    textSecondary: read('--text-secondary', '#7A6A55'),
+    bg: read('--bg-secondary', '#ffffff'),
+    grid: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(26,18,9,0.08)',
+  };
 }
 
 const SPORT_COLORS = {
