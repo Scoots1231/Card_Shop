@@ -14,12 +14,14 @@ document.addEventListener('DOMContentLoaded', () => {
   renderPortfolioStrip();
   renderExposure();
   renderRecentPurchases();
+  renderRecentSales();
   initTicker();
   initNewsPanel();
   document.addEventListener('data-loaded', () => {
     renderPortfolioStrip();
     renderExposure();
     renderRecentPurchases();
+    renderRecentSales();
   });
 });
 
@@ -248,6 +250,40 @@ function renderRecentPurchases() {
         <div class="rp-player">${escHtml(card.player)}</div>
         ${detail ? `<div class="rp-detail">${escHtml(detail)}</div>` : ''}
         <div class="rp-price">${formatCurrency(card.purchasePrice)}${dateStr ? ' · ' + dateStr : ''}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ===== RECENT SALES SIDEBAR =====
+function renderRecentSales() {
+  const container = document.getElementById('recent-sales');
+  if (!container) return;
+
+  const recent = window.AppData.cards
+    .filter(c => !isCashDeposit(c) && c.status === 'Sold' && c.saleDate)
+    .sort((a, b) => (b.saleDate || '').localeCompare(a.saleDate || ''))
+    .slice(0, 5);
+
+  if (recent.length === 0) {
+    container.innerHTML = '<span style="color:var(--text-secondary);font-size:11px;">No sales yet</span>';
+    return;
+  }
+
+  container.innerHTML = recent.map(card => {
+    const pl = calculatePL(card);
+    const plColor = pl >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+    const plText = (pl >= 0 ? '+' : '') + formatCurrency(pl);
+    const dateStr = card.saleDate
+      ? new Date(card.saleDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })
+      : '';
+    const setShort = card.set && card.set.length > 15 ? card.set.slice(0, 15) + '…' : (card.set || '');
+    const detail = [card.year, setShort].filter(Boolean).join(' ');
+    return `
+      <div class="rp-item" title="${escHtml(card.player)}${card.set ? ' — ' + escHtml(card.set) : ''}">
+        <div class="rp-player">${escHtml(card.player)}</div>
+        ${detail ? `<div class="rp-detail">${escHtml(detail)}</div>` : ''}
+        <div class="rp-price" style="color:${plColor};">${plText}${dateStr ? ' · ' + dateStr : ''}</div>
       </div>
     `;
   }).join('');
