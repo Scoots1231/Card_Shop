@@ -218,6 +218,41 @@ function formatPL(val) {
   return prefix + formatCurrency(val);
 }
 
+// Parse a stored date string into a Date, tolerating multiple formats.
+// Returns null if it can't be parsed (so callers can avoid "Invalid Date").
+function parseCardDate(value) {
+  if (!value) return null;
+  const str = String(value).trim();
+  if (!str) return null;
+
+  // ISO date (YYYY-MM-DD): pin to local midnight to avoid TZ off-by-one.
+  let m = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) {
+    const d = new Date(+m[1], +m[2] - 1, +m[3]);
+    return isNaN(d) ? null : d;
+  }
+
+  // US format (M/D/YYYY or MM/DD/YYYY), also accepts '-' separators.
+  m = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if (m) {
+    let year = +m[3];
+    if (year < 100) year += year < 70 ? 2000 : 1900;
+    const d = new Date(year, +m[1] - 1, +m[2]);
+    return isNaN(d) ? null : d;
+  }
+
+  // Fallback: let the Date constructor try (handles full ISO timestamps, etc.).
+  const d = new Date(str);
+  return isNaN(d) ? null : d;
+}
+
+// Format a stored date as a short label (e.g. "Jun 15, '25"); '' if unparseable.
+function formatShortDate(value) {
+  const d = parseCardDate(value);
+  if (!d) return '';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
+}
+
 // Toast notifications
 function showToast(message, type = 'info') {
   let container = document.getElementById('toast-container');
