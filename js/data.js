@@ -49,6 +49,7 @@ function parseNumber(val) {
   return isNaN(n) ? 0 : n;
 }
 
+
 function parseCSVLine(line) {
   const fields = [];
   let cur = '';
@@ -251,6 +252,13 @@ function formatShortDate(value) {
   const d = parseCardDate(value);
   if (!d) return '';
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
+}
+
+// Comparable timestamp for chronological sorting across mixed date formats.
+// Unparseable/missing dates sort to the end regardless of sort direction.
+function dateSortValue(value) {
+  const d = parseCardDate(value);
+  return d ? d.getTime() : -Infinity;
 }
 
 // Toast notifications

@@ -121,10 +121,10 @@ function getFilteredCards() {
       case 'type':          va = a.type || '';             vb = b.type || '';             break;
       case 'grade':         va = parseFloat(a.grade)||0;   vb = parseFloat(b.grade)||0;   break;
       case 'purchasePrice': va = a.purchasePrice;          vb = b.purchasePrice;          break;
-      case 'purchaseDate':  va = a.purchaseDate || '';     vb = b.purchaseDate || '';     break;
+      case 'purchaseDate':  va = dateSortValue(a.purchaseDate); vb = dateSortValue(b.purchaseDate); break;
       case 'estimatedValue':va = a.estimatedValue;         vb = b.estimatedValue;         break;
       case 'pl':            va = calculatePL(a);           vb = calculatePL(b);           break;
-      default:              va = a.purchaseDate || '';     vb = b.purchaseDate || '';     break;
+      default:              va = dateSortValue(a.purchaseDate); vb = dateSortValue(b.purchaseDate); break;
     }
     if (va < vb) return state.sortDir === 'asc' ? -1 : 1;
     if (va > vb) return state.sortDir === 'asc' ? 1 : -1;

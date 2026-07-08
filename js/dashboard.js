@@ -259,7 +259,7 @@ function renderRecentPurchases() {
 
   const recent = window.AppData.cards
     .filter(c => !isCashDeposit(c))
-    .sort((a, b) => (b.purchaseDate || '').localeCompare(a.purchaseDate || ''))
+    .sort((a, b) => dateSortValue(b.purchaseDate) - dateSortValue(a.purchaseDate))
     .slice(0, 5);
 
   if (recent.length === 0) {
@@ -288,7 +288,7 @@ function renderRecentSales() {
 
   const recent = window.AppData.cards
     .filter(c => !isCashDeposit(c) && c.status === 'Sold' && c.saleDate)
-    .sort((a, b) => (b.saleDate || '').localeCompare(a.saleDate || ''))
+    .sort((a, b) => dateSortValue(b.saleDate) - dateSortValue(a.saleDate))
     .slice(0, 5);
 
   if (recent.length === 0) {
