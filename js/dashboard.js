@@ -268,7 +268,7 @@ function renderRecentPurchases() {
   }
 
   container.innerHTML = recent.map(card => {
-    const dateStr = formatShortDate(card.purchaseDate);
+    const dateStr = toMMDDYYYY(card.purchaseDate);
     const setShort = card.set && card.set.length > 15 ? card.set.slice(0, 15) + '…' : (card.set || '');
     const detail = [card.year, setShort].filter(Boolean).join(' ');
     return `
@@ -300,7 +300,7 @@ function renderRecentSales() {
     const pl = calculatePL(card);
     const plColor = pl >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
     const plText = (pl >= 0 ? '+' : '') + formatCurrency(pl);
-    const dateStr = formatShortDate(card.saleDate);
+    const dateStr = toMMDDYYYY(card.saleDate);
     const setShort = card.set && card.set.length > 15 ? card.set.slice(0, 15) + '…' : (card.set || '');
     const detail = [card.year, setShort].filter(Boolean).join(' ');
     return `

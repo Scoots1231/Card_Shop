@@ -116,7 +116,7 @@ function importCSV(file) {
                 type: 'Cash Deposit',
                 grader: '', grade: '', condition: '',
                 purchasePrice: amount,
-                purchaseDate: new Date().toISOString().slice(0, 10),
+                purchaseDate: toMMDDYYYY(new Date()),
                 source: '', estimatedValue: 0,
                 status: 'Cash Deposit',
                 salePrice: 0, saleDate: '', platform: '',
@@ -139,12 +139,12 @@ function importCSV(file) {
             grade: obj.grade || '',
             condition: obj.condition || '',
             purchasePrice: parseNumber(obj.purchasePrice),
-            purchaseDate: obj.purchaseDate || '',
+            purchaseDate: toMMDDYYYY(obj.purchaseDate),
             source: obj.source || '',
             estimatedValue: parseNumber(obj.estimatedValue),
             status: obj.status || 'In Storage',
             salePrice: parseNumber(obj.salePrice),
-            saleDate: obj.saleDate || '',
+            saleDate: toMMDDYYYY(obj.saleDate),
             platform: obj.platform || '',
             frontImageUrl: obj.frontImageUrl || '',
             backImageUrl: obj.backImageUrl || '',
@@ -247,11 +247,23 @@ function parseCardDate(value) {
   return isNaN(d) ? null : d;
 }
 
-// Format a stored date as a short label (e.g. "Jun 15, '25"); '' if unparseable.
-function formatShortDate(value) {
+// Formats a stored date as MM/DD/YYYY — the single date format used everywhere
+// in the app. '' if unparseable.
+function toMMDDYYYY(value) {
   const d = parseCardDate(value);
   if (!d) return '';
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${mm}/${dd}/${d.getFullYear()}`;
+}
+
+// Converts a stored date to the YYYY-MM-DD form required by <input type="date">.
+function toISOInputValue(value) {
+  const d = parseCardDate(value);
+  if (!d) return '';
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${mm}-${dd}`;
 }
 
 // Comparable timestamp for chronological sorting across mixed date formats.

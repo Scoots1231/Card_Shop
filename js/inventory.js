@@ -191,7 +191,7 @@ function renderRow(card, rowNum) {
           <i class="ti ti-cash" style="margin-right:6px;"></i>${card.player}
         </td>
         <td style="color:${amtColor};font-weight:600;">${amtText}</td>
-        <td>${card.purchaseDate || ''}</td>
+        <td>${toMMDDYYYY(card.purchaseDate)}</td>
         <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
         <td><span class="badge ${badgeClass}">CASH</span></td>
         <td>
@@ -229,11 +229,11 @@ function renderRow(card, rowNum) {
       <td>${card.type || ''}</td>
       <td colspan="2">${condDisplay}</td>
       <td>${card.purchasePrice ? formatCurrency(card.purchasePrice) : ''}</td>
-      <td>${card.purchaseDate || ''}</td>
+      <td>${toMMDDYYYY(card.purchaseDate)}</td>
       <td class="text-col">${card.source || ''}</td>
       <td>${card.estimatedValue ? formatCurrency(card.estimatedValue) : ''}</td>
       <td>${card.salePrice ? formatCurrency(card.salePrice) : ''}</td>
-      <td>${card.saleDate || ''}</td>
+      <td>${toMMDDYYYY(card.saleDate)}</td>
       <td class="text-col">${card.platform || ''}</td>
       <td class="${plClass}">${plText}</td>
       <td>${statusBadge}</td>
@@ -448,7 +448,7 @@ function openModal(card) {
             </div>
             <div class="form-group">
               <label for="f-date">Purchase Date <span class="required">*</span></label>
-              <input type="date" id="f-date" class="form-control" required value="${esc(card?.purchaseDate)}">
+              <input type="date" id="f-date" class="form-control" required value="${toISOInputValue(card?.purchaseDate)}">
             </div>
           </div>
           <div class="form-row">
@@ -482,7 +482,7 @@ function openModal(card) {
               </div>
               <div class="form-group">
                 <label for="f-saledate">Sale Date</label>
-                <input type="date" id="f-saledate" class="form-control" value="${esc(card?.saleDate)}">
+                <input type="date" id="f-saledate" class="form-control" value="${toISOInputValue(card?.saleDate)}">
               </div>
             </div>
             <div class="form-group">
@@ -588,12 +588,12 @@ function saveCard(existingId) {
     grade,
     condition,
     purchasePrice: parseFloat(purchasePrice) || 0,
-    purchaseDate,
+    purchaseDate: toMMDDYYYY(purchaseDate),
     source: document.getElementById('f-source').value.trim(),
     estimatedValue: parseFloat(document.getElementById('f-estval').value) || 0,
     status,
     salePrice: status === 'Sold' ? parseFloat(document.getElementById('f-saleprice').value) || 0 : 0,
-    saleDate: status === 'Sold' ? document.getElementById('f-saledate').value : '',
+    saleDate: status === 'Sold' ? toMMDDYYYY(document.getElementById('f-saledate').value) : '',
     platform: status === 'Sold' ? document.getElementById('f-platform').value.trim() : '',
     frontImageUrl: document.getElementById('f-front').value.trim(),
     backImageUrl: document.getElementById('f-back').value.trim(),
@@ -705,7 +705,7 @@ function openSoldModal(card) {
       ...window.AppData.cards[idx],
       status: 'Sold',
       salePrice,
-      saleDate,
+      saleDate: toMMDDYYYY(saleDate),
       platform,
     };
 
@@ -814,7 +814,7 @@ function openCashModal() {
       type: 'Cash Deposit',
       grader: '', grade: '', condition: '',
       purchasePrice: amt,
-      purchaseDate: date,
+      purchaseDate: toMMDDYYYY(date),
       source: '', estimatedValue: 0,
       status: 'Cash Deposit',
       salePrice: 0, saleDate: '', platform: '',
