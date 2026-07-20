@@ -191,7 +191,11 @@ function calculatePL(card) {
 }
 
 function getCashOnHand(cards) {
-  return cards.filter(isCashDeposit).reduce((sum, c) => sum + (c.purchasePrice || 0), 0);
+  const deposits = cards.filter(isCashDeposit).reduce((sum, c) => sum + (c.purchasePrice || 0), 0);
+  const saleProceeds = cards
+    .filter(c => !isCashDeposit(c) && c.status === 'Sold')
+    .reduce((sum, c) => sum + (c.salePrice || 0), 0);
+  return deposits + saleProceeds;
 }
 
 function getPortfolioStats(cards) {
